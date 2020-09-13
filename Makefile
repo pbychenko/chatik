@@ -1,7 +1,7 @@
 install: install-deps install-flow-typed
 
 start-backend:
-	npx nodemon --exec npx babel-node server/index.js
+	npx nodemon --exec npx babel-node ./server.js
 
 start-frontend:
 	npx webpack-dev-server

@@ -8,13 +8,11 @@
   },
   "author": "pbychenko",
   "license": "ISC",
-  "proxy": "http://localhost:8080/",
   "scripts": {
     "build-server": "babel server --out-dir dist --source-maps inline",
     "build-app": "npx webpack -p --env production",
     "build": "sudo npm run build-app && npm run build-server",
     "postinstall": "sudo npm run build",
-    "start": "babel-node ./index.js",
     "dev": "cross-env NODE_ENV=development webpack --config webpack.config.js"
   },
   "devDependencies": {
@@ -49,7 +47,6 @@
     "@babel/polyfill": "^7.7.0",
     "bootstrap": "^4.4.1",
     "browser-sync": "^2.26.12",
-    "cors": "^2.8.5",
     "express": "^4.15.2",
     "lodash": "^4.17.15",
     "pug": "^3.0.0",

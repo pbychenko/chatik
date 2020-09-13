@@ -1,4 +1,6 @@
 const devMode = process.env.NODE_ENV !== 'production';
+// const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
   entry: './src/index.jsx',
@@ -26,4 +28,9 @@ module.exports = {
       },
     ],
   },
+  // plugins: [
+  //   new HtmlWebpackPlugin({
+  //     template: 'index.html',
+  //   }),
+  // ],
 };
