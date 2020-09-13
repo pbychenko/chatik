@@ -8,10 +8,16 @@
   },
   "author": "pbychenko",
   "license": "ISC",
-  "scripts": {},
-
+  "scripts": {
+    "build-server": "babel server --out-dir dist --source-maps inline",
+    "build-app": "npx webpack -p --env production",
+    "build": "sudo npm run build-app && npm run build-server",
+    "postinstall": "sudo npm run build",
+    "start": "babel-node ./server/bin/slack.js"
+  },
   "devDependencies": {
     "@babel/core": "^7.6.2",
+    "@babel/node": "^7.10.5",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/preset-env": "^7.6.2",
     "@babel/preset-react": "^7.9.4",
@@ -29,6 +35,7 @@
     "eslint-plugin-react": "^7.19.0",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
+    "nodemon": "^2.0.4",
     "style-loader": "^1.1.1",
     "webpack": "^4.41.3",
     "webpack-cli": "^3.3.10",
@@ -36,9 +43,11 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.7.0",
+    "@babel/cli": "^7.10.5",
     "bootstrap": "^4.4.1",
     "express": "^4.15.2",
     "lodash": "^4.17.15",
+    "pug": "^3.0.0",
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.1",
     "react-dom": "^16.13.1",

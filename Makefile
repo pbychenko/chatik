@@ -1,14 +1,20 @@
 install: install-deps install-flow-typed
 
-develop:
+start-backend:
+	npx nodemon --exec npx babel-node server/index.js
+
+start-frontend:
 	npx webpack-dev-server
+
+start:
+	npx nodemon --exec npx babel-node server/index.js
 
 install-deps:
 	npm install
 
 build:
 	rm -rf dist
-	NODE_ENV=production npx webpack
+	npm run build
 
 publish: 
 	npm publish --dry-run
