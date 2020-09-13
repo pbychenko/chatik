@@ -8,12 +8,14 @@
   },
   "author": "pbychenko",
   "license": "ISC",
+  "proxy": "http://localhost:8080/",
   "scripts": {
     "build-server": "babel server --out-dir dist --source-maps inline",
     "build-app": "npx webpack -p --env production",
     "build": "sudo npm run build-app && npm run build-server",
     "postinstall": "sudo npm run build",
-    "start": "babel-node ./server/bin/slack.js"
+    "start": "babel-node ./index.js",
+    "dev": "cross-env NODE_ENV=development webpack --config webpack.config.js"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
@@ -24,6 +26,7 @@
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
+    "cross-env": "^7.0.2",
     "css-loader": "^3.4.0",
     "debug": "^4.1.1",
     "eslint": "^6.5.1",
@@ -42,9 +45,11 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.7.0",
     "@babel/cli": "^7.10.5",
+    "@babel/polyfill": "^7.7.0",
     "bootstrap": "^4.4.1",
+    "browser-sync": "^2.26.12",
+    "cors": "^2.8.5",
     "express": "^4.15.2",
     "lodash": "^4.17.15",
     "pug": "^3.0.0",

@@ -7,7 +7,7 @@ start-frontend:
 	npx webpack-dev-server
 
 start:
-	npx nodemon --exec npx babel-node server/index.js
+	npx nodemon --exec npx babel-node index.js
 
 install-deps:
 	npm install

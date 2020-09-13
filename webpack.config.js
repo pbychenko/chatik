@@ -1,16 +1,16 @@
+const devMode = process.env.NODE_ENV !== 'production';
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
-  entry: [
-    `${__dirname}/src/app.jsx`,
-  ],
+  entry: './src/index.jsx',
   resolve: {
     extensions: ['.js', '.jsx'],
   },
   output: {
     path: `${__dirname}/dist/public`,
-    publicPath: '/',
     filename: 'main.js',
   },
+  mode : devMode ? 'development' : 'production',
+  watch : devMode,
   module: {
     rules: [
       {

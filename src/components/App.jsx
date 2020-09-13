@@ -1,13 +1,5 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-// import { Table, Image } from 'react-bootstrap';
-// import AudioPlayer from './AudioPlayer.jsx';
-// import playlist from '../playlist';
-
-// const centerStyle = {
-//   borderColor: 'red',
-//   borderStyle: 'solid',
-// };
 
 export default class App extends React.Component {
   constructor(props) {
@@ -113,19 +105,19 @@ export default class App extends React.Component {
   //   this.setState({ volumeRangeShown: false });
   // }
 
-  handleChange = (e) => {
-    const { name, value } = e.target;
-    const { form } = this.state;
-    this.setState({ form: { ...form, [name]: value } });
-  }
+  // handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const { form } = this.state;
+  //   this.setState({ form: { ...form, [name]: value } });
+  // }
 
   render() {
     return (
       <form>
-        <div className="form-group">
+        {/* <div className="form-group">
           <input type="text" className="form-control" name="name" onChange={this.handleChange} />
-        </div>
-        <button type="submit" className="btn btn-primary btn-block" width="100%">Send</button>
+        </div> */}
+        <button type="submit" className="btn btn-primary btn-block" width="100%">Sessnd</button>
       </form>
     );
   }
