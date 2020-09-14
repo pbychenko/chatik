@@ -1,7 +1,7 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import openSocket from 'socket.io-client';
-const  socket = openSocket('http://localhost:8080');
+const socket = openSocket('http://localhost:8080');
 
 export default class App extends React.Component {
   constructor(props) {
@@ -22,7 +22,11 @@ export default class App extends React.Component {
     const { messages, message } = this.state;
     messages.push(message);
     this.setState({ messages, message: '' });
-    socket.emit('chat message', message);    
+    socket.emit('testCon', message);
+    socket.on('testCon1', (data) => {
+      console.log(data);
+    });
+    // console.log('test');
   }
 
   render() {
@@ -35,7 +39,7 @@ export default class App extends React.Component {
         </div>
         <button type="submit" className="btn btn-primary btn-block" width="100%">Send</button>
       </form>
-      {messages.map(message => (<p>{message}</p>))}
+      {/* {messages.map(message => (<p>{message}</p>))} */}
 
       </>
     );
