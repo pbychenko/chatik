@@ -117,7 +117,7 @@ export default class App extends React.Component {
         {/* <div className="form-group">
           <input type="text" className="form-control" name="name" onChange={this.handleChange} />
         </div> */}
-        <button type="submit" className="btn btn-primary btn-block" width="100%">Sessnd</button>
+        <button type="submit" className="btn btn-primary btn-block" width="100%">Send</button>
       </form>
     );
   }

@@ -6,10 +6,11 @@ var path = require('path');
 
 // app.set('view engine', 'pug');
 app.use('/assets', express.static(__dirname + '/dist/public'));
-var port = '3000';
+var port = '8080';
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
+  // res.render('index');
 });
 
 http.listen(port, () => {
