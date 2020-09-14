@@ -8,6 +8,20 @@ var path = require('path');
 app.use('/assets', express.static(__dirname + '/dist/public'));
 var port = '8080';
 
+// io.on('connection', (socket) => {
+//   console.log('a user connected');
+// });
+
+io.on('connection', (client) => {
+  client.on('chat message', (msg) => {
+    io.emit('chat message', { message: msg });
+  });
+  client.on('disconnect', () => {
+    console.log(`user has disconnected`)
+  })
+
+});
+
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
   // res.render('index');
