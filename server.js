@@ -10,7 +10,8 @@ var path = require('path');
 app.use('/assets', express.static(__dirname + '/dist/public'));
 var port = '8080';
 
-const obj = [];
+const messages = ['s', 'd'];
+// const obj1 = [1,2,3];
 
 // io.on('connection', (socket) => {
 //   console.log('a user connected');
@@ -28,11 +29,11 @@ io.on('connection', (socket) => {
   socket.on('testCon', (data) => {
     // we tell the client to execute 'new message'
     console.log(data);
-    obj.push(data);
-    console.log(obj);
+    messages.push(data);
+    console.log(messages);
 
     // socket.broadcast.emit('testCon1', obj);
-    socket.emit('testCon1', obj);
+    socket.emit('testCon1', messages);
   });
 
 
@@ -46,6 +47,14 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
   // res.render('index');
 });
+
+app.get('/messages', (req, res) => {
+  return res.send(messages);
+});
+
+// app.get('/example/a', function (req, res) {
+//   res.send('Hello from A!');
+// });
 
 http.listen(port, () => {
   console.log(`Server has been started on ${port}`);

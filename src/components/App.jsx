@@ -1,7 +1,10 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import openSocket from 'socket.io-client';
+import axios from 'axios';
+
 const socket = openSocket('http://localhost:8080');
+const baseUrl = 'http://localhost:8080';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -9,7 +12,25 @@ export default class App extends React.Component {
     this.state = {
       messages: [],
       message: '',
+      requestState: '',
     };
+  }
+
+  componentDidMount() {
+    this.setState({ requestState: 'processing' }, async () => {
+      try {
+        const messages = await axios.get(`${baseUrl}/messages`);
+        
+        this.setState({
+          requestState: 'success',
+          messages,
+        });
+        
+      } catch (error) {
+        this.setState({ requestState: 'failed' });
+        throw error;
+      }
+    });
   }
 
   handleChange = (e) => {
@@ -31,6 +52,8 @@ export default class App extends React.Component {
 
   render() {
     const { messages, message } = this.state;
+    console.log('fd');
+    console.log(messages);
     return (
       <>
       <form onSubmit={this.handleSubmit}>
@@ -39,7 +62,7 @@ export default class App extends React.Component {
         </div>
         <button type="submit" className="btn btn-primary btn-block" width="100%">Send</button>
       </form>
-      {/* {messages.map(message => (<p>{message}</p>))} */}
+      {messages.map(message => (<p>{message}</p>))}
 
       </>
     );

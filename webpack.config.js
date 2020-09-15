@@ -2,12 +2,15 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // const CleanWebpackPlugin = require('clean-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+// require('babel-polyfill');
+require("@babel/polyfill");
 
 const outputDirectory = 'dist';
 
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
-  entry: './src/index.jsx',
+  // entry: './src/index.jsx',
+  entry: ['@babel/polyfill', './src/index.jsx'],
   resolve: {
     extensions: ['.js', '.jsx'],
   },
