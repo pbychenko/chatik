@@ -3,10 +3,10 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
-// var cors = require('cors')
+var cors = require('cors')
 
 // app.set('view engine', 'pug');
-// app.use(cors());
+app.use(cors());
 app.use('/assets', express.static(__dirname + '/dist/public'));
 var port = '8080';
 
@@ -48,7 +48,7 @@ app.get('/', (req, res) => {
   // res.render('index');
 });
 
-app.get('/messages', (req, res) => {
+app.get('/messages', cors(), (req, res) => {
   return res.send(messages);
 });
 
