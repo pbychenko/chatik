@@ -1,124 +1,124 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import openSocket from 'socket.io-client';
+import axios from 'axios';
+import {
+  Spinner,
+  Alert,
+  ListGroup,
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+} from 'react-bootstrap';
+
+const socket = openSocket('http://localhost:8080');
+const baseUrl = 'http://localhost:8080';
+const centerStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: '100vh',
+};
+const spinnerSizeStyle = {
+  width: '13rem',
+  height: '13rem',
+};
+
+// const borde = {
+//   borderStyle: 'solid',
+//   borderColor: 'green',
+// };
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      messages: [],
+      message: '',
+      requestState: '',
+      showErrorBlock: false,
+    };
   }
 
-  // load = (url) => {
-  //   this.setState({
-  //     url,
-  //     played: 0,
-  //     loaded: 0,
-  //     pip: false,
-  //   });
-  // }
+  componentDidMount() {
+    this.setState({ requestState: 'processing' }, async () => {
+      try {
+        const initMessages = await axios.get(`${baseUrl}/messages`);
+        this.setState({
+          requestState: 'success',
+          messages: initMessages.data.slice(),
+        });
+      } catch (error) {
+        this.setState({ requestState: 'failed' });
+        throw error;
+      }
+    });
+  }
 
-  // handlePlayPause = () => {
-  //   const { playing } = this.state;
-  //   this.setState({ playing: !playing });
-  // }
+  handleChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
+  }
 
-  // handleMuteAction = () => {
-  //   const { muted } = this.state;
-  //   this.setState({ muted: !muted });
-  // }
-
-  // handleNextTrackAction = () => {
-  //   const { currentTrackNumber, tracks } = this.state;
-  //   if (currentTrackNumber === (tracks.length - 1)) {
-  //     this.setState({ currentTrackNumber: 0 });
-  //   } else {
-  //     this.setState({ currentTrackNumber: currentTrackNumber + 1 });
-  //   }
-  // }
-
-  // handlePrevTrackAction = () => {
-  //   const { currentTrackNumber, tracks } = this.state;
-  //   if (currentTrackNumber === 0) {
-  //     this.setState({ currentTrackNumber: tracks.length - 1 });
-  //   } else {
-  //     this.setState({ currentTrackNumber: currentTrackNumber - 1 });
-  //   }
-  // }
-
-  // handleDuration = (duration) => {
-  //   this.setState({ duration });
-  // }
-
-  // handleVolumeChange = (e) => {
-  //   const { muted } = this.state;
-  //   const volume = parseFloat(e.target.value);
-  //   this.setState({ volume });
-  //   if (volume === 0) {
-  //     this.setState({ muted: true });
-  //   }
-  //   if (volume !== 0 && muted !== false) {
-  //     this.setState({ muted: false });
-  //   }
-  // }
-
-  // handleSeekChange = (e) => {
-  //   this.setState({ played: parseFloat(e.target.value) });
-  // }
-
-  // handleSeekMouseDown = () => {
-  //   this.setState({ seeking: true });
-  // }
-
-  // handleSeekMouseUp = (player) => (e) => {
-  //   this.setState({ seeking: false });
-  //   player.seekTo(parseFloat(e.target.value));
-  // }
-
-  // handleProgress = (state) => {
-  //   if (!this.state.seeking) {
-  //     this.setState(state);
-  //   }
-  // }
-
-  // handleTrackSelect = (id) => () => {
-  //   this.setState({ currentTrackNumber: id });
-  // }
-
-  // handleOnEnded = () => {
-  //   const { currentTrackNumber, tracks } = this.state;
-  //   if (currentTrackNumber === (tracks.length - 1)) {
-  //     this.setState({ currentTrackNumber: 0 });
-  //   } else {
-  //     this.setState({ currentTrackNumber: currentTrackNumber + 1 });
-  //   }
-  // }
-
-  // handleRepeateAction = () => {
-  //   const { loop } = this.state;
-  //   this.setState({ loop: !loop });
-  // }
-
-  // handleonMouseEnter = () => {
-  //   this.setState({ volumeRangeShown: true });
-  // }
-
-  // handleonMouseLeave = () => {
-  //   this.setState({ volumeRangeShown: false });
-  // }
-
-  // handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const { form } = this.state;
-  //   this.setState({ form: { ...form, [name]: value } });
-  // }
+  handleSubmit = (e) => {
+    e.preventDefault();
+    const { messages, message } = this.state;
+    messages.push(message);
+    this.setState({ message: '' });
+    socket.emit('testCon', message);
+    socket.on('testCon1', (messages) => {
+      console.log(messages);
+      this.setState({ messages });
+    });
+  }
 
   render() {
+    const { messages, message, requestState } = this.state;
+
+    if (requestState === 'processing') {
+      return (
+        <div className="text-center" style = {centerStyle}>
+          <Spinner animation="border" style={spinnerSizeStyle} />
+        </div>
+      );
+    }
+
+    if (requestState === 'success') {
+      return (
+        <>
+          <Container>
+            <Container>
+              <Row>
+                <Col xs={6} md={4}></Col>
+                <Col xs={12} md={8}>
+                  <ListGroup variant="flush">
+                  {messages.map((message) => (<ListGroup.Item style={{wordWrap: 'break-word'}}>{message}</ListGroup.Item>))}
+                  </ListGroup>
+                </Col>
+              </Row>
+            </Container>
+          <Form onSubmit={this.handleSubmit}>
+            <Form.Row>
+              <Col lg={11} xs={12} style={{ marginBottom: '10px' }}>
+                <Form.Control type="text" placeholder="Readonly input here..." name="message" onChange={this.handleChange} value={message} />
+              </Col>
+              <Col lg={1} xs={12}>
+                <Button variant="primary" type="submit" block >Send</Button>
+              </Col>
+            </Form.Row>
+          </Form>
+          </Container>
+       </>
+      );
+    }
     return (
-      <form>
-        {/* <div className="form-group">
-          <input type="text" className="form-control" name="name" onChange={this.handleChange} />
-        </div> */}
-        <button type="submit" className="btn btn-primary btn-block" width="100%">Sessnd</button>
-      </form>
+      <>
+        <Alert variant='info' className="text-center">
+          Something wrong with newtwork please try again later
+        </Alert>
+      </>
     );
   }
 }

@@ -1,9 +1,16 @@
-const devMode = process.env.NODE_ENV !== 'production';
-// const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const devMode = process.env.NODE_ENV !== 'production';
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+// require('babel-polyfill');
+require("@babel/polyfill");
+
+const outputDirectory = 'dist';
 
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
-  entry: './src/index.jsx',
+  // entry: './src/index.jsx',
+  entry: ['@babel/polyfill', './src/index.jsx'],
   resolve: {
     extensions: ['.js', '.jsx'],
   },
@@ -11,8 +18,8 @@ module.exports = {
     path: `${__dirname}/dist/public`,
     filename: 'main.js',
   },
-  mode : devMode ? 'development' : 'production',
-  watch : devMode,
+  // mode : devMode ? 'development' : 'production',
+  // watch : devMode,
   module: {
     rules: [
       {
@@ -28,9 +35,18 @@ module.exports = {
       },
     ],
   },
-  // plugins: [
-  //   new HtmlWebpackPlugin({
-  //     template: 'index.html',
-  //   }),
-  // ],
+  devServer: {
+    port: 3000,
+    open: true,
+    historyApiFallback: true,
+    proxy: {
+      '/api': 'http://localhost:8080',
+    },
+  },
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: 'index.html',
+    }),
+  ],
 };
