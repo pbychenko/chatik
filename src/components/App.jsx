@@ -2,6 +2,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import openSocket from 'socket.io-client';
 import axios from 'axios';
+import _ from 'lodash';
 import {
   Spinner,
   Alert,
@@ -35,7 +36,11 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      messages: [],
+      channels: [],
+      channelsMessages: [],
+      visibleMessages: [],
+      selectedChannel: '',
+      // messages: [],
       message: '',
       requestState: '',
       showErrorBlock: false,
@@ -45,10 +50,15 @@ export default class App extends React.Component {
   componentDidMount() {
     this.setState({ requestState: 'processing' }, async () => {
       try {
-        const initMessages = await axios.get(`${baseUrl}/messages`);
+        // const initMessages = await axios.get(`${baseUrl}/messages`);
+        const initCannels = await axios.get(`${baseUrl}/channels`);
+        const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
         this.setState({
           requestState: 'success',
-          messages: initMessages.data.slice(),
+          channels: initCannels.data,
+          messages: initMessages.data,
+          selectedChannel: initCannels.data[0].id,
+          visibleMessages: initMessages.data[initCannels.data[0].id],
         });
       } catch (error) {
         this.setState({ requestState: 'failed' });
@@ -64,18 +74,28 @@ export default class App extends React.Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { messages, message } = this.state;
-    messages.push(message);
+    const { messages, message, selectedChannel } = this.state;
+    messages[selectedChannel].push(message);
     this.setState({ message: '' });
-    socket.emit('testCon', message);
+    socket.emit('testCon', { channelId: selectedChannel, message });
     socket.on('testCon1', (messages) => {
-      console.log(messages);
+      // console.log(messages);
       this.setState({ messages });
     });
   }
 
+  handleSelectChannels = (id) => () => {
+    // const { name, value } = e.target;
+    const { messages } = this.state;
+    console.log(id);
+    const visibleMessages = messages[id];
+    this.setState({ visibleMessages, selectedChannel: id });
+  }
+
   render() {
-    const { messages, message, requestState } = this.state;
+    const { visibleMessages, message, requestState, channels, selectedChannel } = this.state;
+    // console.log(messages);
+    // console.log(channels);
 
     if (requestState === 'processing') {
       return (
@@ -89,7 +109,41 @@ export default class App extends React.Component {
       return (
         <>
           <Container>
-            <Container>
+              <Row>
+                {/* <Col xs={6} md={4}></Col> */}
+                <Col xs={12} md={4}>
+                  <ListGroup variant="flush">
+                  {channels.map((channel) =>
+                    (<ListGroup.Item
+                     key={channel.id}
+                     style={{ wordWrap: 'break-word', textAlign: 'left' }}
+                     onClick={this.handleSelectChannels(channel.id)}
+                     className={ channel.id === selectedChannel ? 'active' : null}
+                    //  active='false'
+                     >
+                      {channel.name}</ListGroup.Item>))}
+                  </ListGroup>
+                </Col>
+                <Col xs={12} md={8}>
+                  <ListGroup variant="flush">
+                  {/* <ListGroup.Item style={{wordWrap: 'break-word', textAlign: 'right'}}>asds</ListGroup.Item>
+                  <ListGroup.Item style={{wordWrap: 'break-word', textAlign: 'right'}}>sdsds</ListGroup.Item> */}
+                  {visibleMessages.map((message) => (<ListGroup.Item key={_.uniqueId()} style={{ wordWrap: 'break-word', textAlign: 'right' }}>{message}</ListGroup.Item>))}
+                  </ListGroup>
+                  <Form onSubmit={this.handleSubmit}>
+                    <Form.Row>
+                      <Col lg={11} xs={12} style={{ marginBottom: '10px' }}>
+                        <Form.Control type="text" placeholder="Readonly input here..." name="message" onChange={this.handleChange} value={message} />
+                      </Col>
+                      <Col lg={1} xs={12}>
+                        <Button variant="primary" type="submit" block >Send</Button>
+                      </Col>
+                    </Form.Row>
+                  </Form>
+                </Col>
+              </Row>
+            </Container>
+            {/* <Container>
               <Row>
                 <Col xs={6} md={4}></Col>
                 <Col xs={12} md={8}>
@@ -98,8 +152,8 @@ export default class App extends React.Component {
                   </ListGroup>
                 </Col>
               </Row>
-            </Container>
-          <Form onSubmit={this.handleSubmit}>
+            </Container> */}
+          {/* <Form onSubmit={this.handleSubmit}>
             <Form.Row>
               <Col lg={11} xs={12} style={{ marginBottom: '10px' }}>
                 <Form.Control type="text" placeholder="Readonly input here..." name="message" onChange={this.handleChange} value={message} />
@@ -108,8 +162,8 @@ export default class App extends React.Component {
                 <Button variant="primary" type="submit" block >Send</Button>
               </Col>
             </Form.Row>
-          </Form>
-          </Container>
+          </Form> */}
+          {/* </Container> */}
        </>
       );
     }

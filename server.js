@@ -3,19 +3,33 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
-var cors = require('cors')
+var cors = require('cors');
+var _ = require('lodash');
 
 // app.set('view engine', 'pug');
 app.use(cors());
 app.use('/assets', express.static(__dirname + '/dist/public'));
 var port = '8080';
 
-const messages = ['s', 'd'];
-// const obj1 = [1,2,3];
+// const messages = ['Привет мля'];
+const channel1Id = _.uniqueId();
+const channel2Id = _.uniqueId();
 
-// io.on('connection', (socket) => {
-//   console.log('a user connected');
-// });  
+const channels = [
+  {
+    id: channel1Id,
+    name: 'general',
+  },
+  {
+    id: channel2Id,
+    name: 'test',
+  },
+];
+
+const channelsMessages = {
+  [channel1Id]: ['канал general'],
+  [channel2Id]: ['канал test'],
+};
 
 io.on('connection', (socket) => {
   console.log(`user connected`)
@@ -28,12 +42,13 @@ io.on('connection', (socket) => {
 
   socket.on('testCon', (data) => {
     // we tell the client to execute 'new message'
-    console.log(data);
-    messages.push(data);
-    console.log(messages);
+    // console.log(data);
+    const { channelId, message } = data;
+    channelsMessages[channelId].push(message);
+    console.log(channelsMessages);
 
     // socket.broadcast.emit('testCon1', obj);
-    socket.emit('testCon1', messages);
+    socket.emit('testCon1', channelsMessages);
   });
 
 
@@ -50,6 +65,14 @@ app.get('/', (req, res) => {
 
 app.get('/messages', cors(), (req, res) => {
   return res.send(messages);
+});
+
+app.get('/channels', cors(), (req, res) => {
+  return res.send(channels);
+});
+
+app.get('/channelsMessages', cors(), (req, res) => {
+  return res.send(channelsMessages);
 });
 
 // app.get('/example/a', function (req, res) {
