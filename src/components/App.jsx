@@ -2,7 +2,16 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import openSocket from 'socket.io-client';
 import axios from 'axios';
-import { Table, Spinner, Alert } from 'react-bootstrap';
+import {
+  Spinner,
+  Alert,
+  ListGroup,
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+} from 'react-bootstrap';
 
 const socket = openSocket('http://localhost:8080');
 const baseUrl = 'http://localhost:8080';
@@ -16,6 +25,11 @@ const spinnerSizeStyle = {
   width: '13rem',
   height: '13rem',
 };
+
+// const borde = {
+//   borderStyle: 'solid',
+//   borderColor: 'green',
+// };
 
 export default class App extends React.Component {
   constructor(props) {
@@ -32,13 +46,10 @@ export default class App extends React.Component {
     this.setState({ requestState: 'processing' }, async () => {
       try {
         const initMessages = await axios.get(`${baseUrl}/messages`);
-        // const messages = 
-        
         this.setState({
           requestState: 'success',
           messages: initMessages.data.slice(),
         });
-        
       } catch (error) {
         this.setState({ requestState: 'failed' });
         throw error;
@@ -61,13 +72,10 @@ export default class App extends React.Component {
       console.log(messages);
       this.setState({ messages });
     });
-    // console.log('test');
   }
 
   render() {
     const { messages, message, requestState } = this.state;
-    // console.log('fd');
-    // console.log(messages);
 
     if (requestState === 'processing') {
       return (
@@ -80,14 +88,29 @@ export default class App extends React.Component {
     if (requestState === 'success') {
       return (
         <>
-          <form onSubmit={this.handleSubmit}>
-            <div className="form-group">
-              <input type="text" className="form-control" name="message" onChange={this.handleChange} value={message} />
-            </div>
-            <button type="submit" className="btn btn-primary btn-block" width="100%">Send</button>
-          </form>
-          {messages.map(message => (<p>{message}</p>))}
-        </>
+          <Container>
+            <Container>
+              <Row>
+                <Col xs={6} md={4}></Col>
+                <Col xs={12} md={8}>
+                  <ListGroup variant="flush">
+                  {messages.map((message) => (<ListGroup.Item style={{wordWrap: 'break-word'}}>{message}</ListGroup.Item>))}
+                  </ListGroup>
+                </Col>
+              </Row>
+            </Container>
+          <Form onSubmit={this.handleSubmit}>
+            <Form.Row>
+              <Col lg={11} xs={12} style={{ marginBottom: '10px' }}>
+                <Form.Control type="text" placeholder="Readonly input here..." name="message" onChange={this.handleChange} value={message} />
+              </Col>
+              <Col lg={1} xs={12}>
+                <Button variant="primary" type="submit" block >Send</Button>
+              </Col>
+            </Form.Row>
+          </Form>
+          </Container>
+       </>
       );
     }
     return (
@@ -97,5 +120,5 @@ export default class App extends React.Component {
         </Alert>
       </>
     );
-  }    
+  }
 }
