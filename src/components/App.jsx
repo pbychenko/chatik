@@ -94,7 +94,7 @@ export default class App extends React.Component {
                 <Col xs={6} md={4}></Col>
                 <Col xs={12} md={8}>
                   <ListGroup variant="flush">
-                  {messages.map((message) => (<ListGroup.Item style={{wordWrap: 'break-word'}}>{message}</ListGroup.Item>))}
+                  {messages.map((message) => (<ListGroup.Item style={{wordWrap: 'break-word', textAlign: 'right'}}>{message}</ListGroup.Item>))}
                   </ListGroup>
                 </Col>
               </Row>
