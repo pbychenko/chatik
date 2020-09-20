@@ -50,15 +50,32 @@ export default class App extends React.Component {
   componentDidMount() {
     this.setState({ requestState: 'processing' }, async () => {
       try {
-        // const initMessages = await axios.get(`${baseUrl}/messages`);
-        const initCannels = await axios.get(`${baseUrl}/channels`);
-        const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
-        this.setState({
-          requestState: 'success',
-          channels: initCannels.data,
-          channelsMessages: initMessages.data,
-          selectedChannel: initCannels.data[0].id,
-          visibleMessages: initMessages.data[initCannels.data[0].id],
+        // const initCannels = await axios.get(`${baseUrl}/channels`);
+        // const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
+        socket.emit('add user');
+        socket.on('user joined', (data) => {
+          // console.log('joined');
+          const initCannels = data.channels;
+          const initMessages = data.channelsMessages;
+          this.setState({
+            requestState: 'success',
+            // channels: initCannels.data,
+            // channelsMessages: initMessages.data,
+            // selectedChannel: initCannels.data[0].id,
+            // visibleMessages: initMessages.data[initCannels.data[0].id],
+            channels: initCannels,
+            channelsMessages: initMessages,
+            selectedChannel: initCannels[0].id,
+            visibleMessages: initMessages[initCannels[0].id],
+          });
+          // const visibleMessages = messages[selectedChannel];
+          // this.setState({ channelsMessages: messages, visibleMessages });
+        });
+        socket.on('new message', (messages) => {
+          // console.log(messages);
+          const { selectedChannel } = this.state;
+          const visibleMessages = messages[selectedChannel];
+          this.setState({ channelsMessages: messages, visibleMessages });
         });
       } catch (error) {
         this.setState({ requestState: 'failed' });
@@ -77,12 +94,8 @@ export default class App extends React.Component {
     const { channelsMessages, message, selectedChannel } = this.state;
     channelsMessages[selectedChannel].push(message);
     this.setState({ message: '' });
-    socket.emit('testCon', { channelId: selectedChannel, message });
-    socket.on('testCon1', (messages) => {
-      // console.log(messages);
-      const visibleMessages = messages[selectedChannel];
-      this.setState({ channelsMessages: messages, visibleMessages });
-    });
+    socket.emit('new message', { channelId: selectedChannel, message });
+    
   }
 
   handleSelectChannels = (id) => () => {
@@ -141,27 +154,6 @@ export default class App extends React.Component {
                 </Col>
               </Row>
             </Container>
-            {/* <Container>
-              <Row>
-                <Col xs={6} md={4}></Col>
-                <Col xs={12} md={8}>
-                  <ListGroup variant="flush">
-                  {messages.map((message) => (<ListGroup.Item style={{wordWrap: 'break-word', textAlign: 'right'}}>{message}</ListGroup.Item>))}
-                  </ListGroup>
-                </Col>
-              </Row>
-            </Container> */}
-          {/* <Form onSubmit={this.handleSubmit}>
-            <Form.Row>
-              <Col lg={11} xs={12} style={{ marginBottom: '10px' }}>
-                <Form.Control type="text" placeholder="Readonly input here..." name="message" onChange={this.handleChange} value={message} />
-              </Col>
-              <Col lg={1} xs={12}>
-                <Button variant="primary" type="submit" block >Send</Button>
-              </Col>
-            </Form.Row>
-          </Form> */}
-          {/* </Container> */}
        </>
       );
     }

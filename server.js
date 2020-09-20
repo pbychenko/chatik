@@ -31,6 +31,23 @@ const channelsMessages = {
   [channel2Id]: ['канал test'],
 };
 
+// const state = {
+//   channels: [
+//     {
+//       id: channel1Id,
+//       name: 'general',
+//     },
+//     {
+//       id: channel2Id,
+//       name: 'test',
+//     },
+//   ],
+//   channelsMessages: {
+//     [channel1Id]: ['канал general'],
+//     [channel2Id]: ['канал test'],
+//   },
+// };
+
 io.on('connection', (socket) => {
   console.log(`user connected`)
   // client.on('chat message', (msg) => {
@@ -39,8 +56,14 @@ io.on('connection', (socket) => {
   // client.on('testCon', (data) => {
   //   io.emit('testCon', obj);
   // });
+  // socket.emit('user joined', { channels, channelsMessages });
 
-  socket.on('testCon', (data) => {
+  socket.on('add user', (data) => {
+    socket.emit('user joined', { channels, channelsMessages });
+    socket.broadcast.emit('user joined', { channels, channelsMessages });
+  });
+
+  socket.on('new message', (data) => {
     // we tell the client to execute 'new message'
     // console.log(data);
     const { channelId, message } = data;
@@ -48,10 +71,9 @@ io.on('connection', (socket) => {
     console.log(channelsMessages);
 
     // socket.broadcast.emit('testCon1', obj);
-    socket.emit('testCon1', channelsMessages);
-    socket.broadcast.emit('testCon1', channelsMessages);
+    socket.emit('new message', channelsMessages);
+    socket.broadcast.emit('new message', channelsMessages);
   });
-
 
   socket.on('disconnect', () => {
     console.log(`user has disconnected`)
