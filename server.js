@@ -49,6 +49,7 @@ io.on('connection', (socket) => {
 
     // socket.broadcast.emit('testCon1', obj);
     socket.emit('testCon1', channelsMessages);
+    socket.broadcast.emit('testCon1', channelsMessages);
   });
 
 

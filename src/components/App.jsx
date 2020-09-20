@@ -56,7 +56,7 @@ export default class App extends React.Component {
         this.setState({
           requestState: 'success',
           channels: initCannels.data,
-          messages: initMessages.data,
+          channelsMessages: initMessages.data,
           selectedChannel: initCannels.data[0].id,
           visibleMessages: initMessages.data[initCannels.data[0].id],
         });
@@ -74,21 +74,22 @@ export default class App extends React.Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { messages, message, selectedChannel } = this.state;
-    messages[selectedChannel].push(message);
+    const { channelsMessages, message, selectedChannel } = this.state;
+    channelsMessages[selectedChannel].push(message);
     this.setState({ message: '' });
     socket.emit('testCon', { channelId: selectedChannel, message });
     socket.on('testCon1', (messages) => {
       // console.log(messages);
-      this.setState({ messages });
+      const visibleMessages = messages[selectedChannel];
+      this.setState({ channelsMessages: messages, visibleMessages });
     });
   }
 
   handleSelectChannels = (id) => () => {
     // const { name, value } = e.target;
-    const { messages } = this.state;
-    console.log(id);
-    const visibleMessages = messages[id];
+    const { channelsMessages } = this.state;
+    // console.log(id);
+    const visibleMessages = channelsMessages[id];
     this.setState({ visibleMessages, selectedChannel: id });
   }
 
@@ -119,15 +120,12 @@ export default class App extends React.Component {
                      style={{ wordWrap: 'break-word', textAlign: 'left' }}
                      onClick={this.handleSelectChannels(channel.id)}
                      className={ channel.id === selectedChannel ? 'active' : null}
-                    //  active='false'
                      >
                       {channel.name}</ListGroup.Item>))}
                   </ListGroup>
                 </Col>
                 <Col xs={12} md={8}>
                   <ListGroup variant="flush">
-                  {/* <ListGroup.Item style={{wordWrap: 'break-word', textAlign: 'right'}}>asds</ListGroup.Item>
-                  <ListGroup.Item style={{wordWrap: 'break-word', textAlign: 'right'}}>sdsds</ListGroup.Item> */}
                   {visibleMessages.map((message) => (<ListGroup.Item key={_.uniqueId()} style={{ wordWrap: 'break-word', textAlign: 'right' }}>{message}</ListGroup.Item>))}
                   </ListGroup>
                   <Form onSubmit={this.handleSubmit}>
