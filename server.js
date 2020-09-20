@@ -71,6 +71,22 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('new message', channelsMessages);
   });
 
+  socket.on('new channel', (newChannelName) => {
+    // const { channelId, message } = data;
+    // channelsMessages[channelId].push(message);
+    // console.log(channelsMessages);
+    // console.log(newChannelName);
+    const channelId = _.uniqueId();
+    // const { channelName } = req.body;
+    channels.push({ id: channelId, name: newChannelName });
+    channelsMessages[channelId] = ['Новое сообщение'];
+
+    socket.emit('new channel', { channels, channelsMessages });
+    socket.broadcast.emit('new channel', { channels, channelsMessages });
+  });
+
+
+
   socket.on('disconnect', () => {
     console.log(`user has disconnected`);
   });
@@ -98,12 +114,12 @@ app.post('/deleteChannel', cors(), urlencodedParser, (req, res) => {
   res.end('tess');
 });
 
-app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
-  const channelId = _.uniqueId();
-  const { channelName } = req.body;
-  channels.push({ id: channelId, name: channelName });
-  channelsMessages[channelId] = ['Новое сообщение'];
-});
+// app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
+//   const channelId = _.uniqueId();
+//   const { channelName } = req.body;
+//   channels.push({ id: channelId, name: channelName });
+//   channelsMessages[channelId] = ['Новое сообщение'];
+// });
 
 http.listen(port, () => {
   console.log(`Server has been started on ${port}`);

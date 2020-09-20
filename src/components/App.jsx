@@ -41,7 +41,6 @@ export default class App extends React.Component {
       channelsMessages: [],
       visibleMessages: [],
       selectedChannel: '',
-      // messages: [],
       message: '',
       showModal: false,
       newChannelName: '',
@@ -80,6 +79,12 @@ export default class App extends React.Component {
           const visibleMessages = messages[selectedChannel];
           this.setState({ channelsMessages: messages, visibleMessages });
         });
+        socket.on('new channel', (data) => {
+          console.log(data);
+          // const { selectedChannel } = this.state;
+          // const visibleMessages = messages[selectedChannel];
+          this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
+        });
       } catch (error) {
         this.setState({ requestState: 'failed' });
         throw error;
@@ -94,16 +99,14 @@ export default class App extends React.Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { channelsMessages, message, selectedChannel } = this.state;
-    channelsMessages[selectedChannel].push(message);
+    const { message, selectedChannel } = this.state;
+    // channelsMessages[selectedChannel].push(message);
     this.setState({ message: '' });
     socket.emit('new message', { channelId: selectedChannel, message });
   }
 
-   handleSelectChannels = (id) => () => {
-    // const { name, value } = e.target;
+  handleSelectChannels = (id) => () => {
     const { channelsMessages } = this.state;
-    // console.log(id);
     const visibleMessages = channelsMessages[id];
     this.setState({ visibleMessages, selectedChannel: id });
   }
@@ -124,17 +127,18 @@ export default class App extends React.Component {
     e.preventDefault();
     const { newChannelName } = this.state;
     // channelsMessages[selectedChannel].push(message);
-    this.setState({ newChannelName: '' });
+    // this.setState({ newChannelName: '' });
     // socket.emit('new message', { channelId: selectedChannel, message });
-    axios.post(`${baseUrl}/addChannel`, {
-      channelName: newChannelName,
-    })
-      .then((res) => {
-        // const { channels } = this.state;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    // axios.post(`${baseUrl}/addChannel`, {
+    //   channelName: newChannelName,
+    // })
+    //   .then((res) => {
+    //     // const { channels } = this.state;
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
+    socket.emit('new channel', newChannelName);
     this.setState({ newChannelName: '', showModal: false });
   }
 
