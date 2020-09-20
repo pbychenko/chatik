@@ -13,6 +13,7 @@ import {
   Form,
   Button,
 } from 'react-bootstrap';
+import MyModal from './MyModal.jsx';
 
 const socket = openSocket('http://localhost:8080');
 const baseUrl = 'http://localhost:8080';
@@ -42,6 +43,8 @@ export default class App extends React.Component {
       selectedChannel: '',
       // messages: [],
       message: '',
+      showModal: false,
+      newChannelName: '',
       requestState: '',
       showErrorBlock: false,
     };
@@ -95,10 +98,9 @@ export default class App extends React.Component {
     channelsMessages[selectedChannel].push(message);
     this.setState({ message: '' });
     socket.emit('new message', { channelId: selectedChannel, message });
-    
   }
 
-  handleSelectChannels = (id) => () => {
+   handleSelectChannels = (id) => () => {
     // const { name, value } = e.target;
     const { channelsMessages } = this.state;
     // console.log(id);
@@ -106,10 +108,46 @@ export default class App extends React.Component {
     this.setState({ visibleMessages, selectedChannel: id });
   }
 
+  handleDeleteChannel = (id) => () => {
+    axios.post(`${baseUrl}/deleteChannel`, {
+      channelId: id.toString(),
+    })
+      .then((res) => {
+        // const { channels } = this.state;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  handleAddChannel = (e) => {
+    e.preventDefault();
+    const { newChannelName } = this.state;
+    // channelsMessages[selectedChannel].push(message);
+    this.setState({ newChannelName: '' });
+    // socket.emit('new message', { channelId: selectedChannel, message });
+    axios.post(`${baseUrl}/addChannel`, {
+      channelName: newChannelName,
+    })
+      .then((res) => {
+        // const { channels } = this.state;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    this.setState({ newChannelName: '', showModal: false });
+  }
+
+  handleCloseModal = () => {
+    this.setState({ showModal: false });
+  }
+
+  handleShowModal = () => {
+    this.setState({ showModal: true });
+  }
+
   render() {
-    const { visibleMessages, message, requestState, channels, selectedChannel } = this.state;
-    // console.log(messages);
-    // console.log(channels);
+    const { visibleMessages, message, requestState, channels, selectedChannel, showModal, newChannelName } = this.state;
 
     if (requestState === 'processing') {
       return (
@@ -125,7 +163,7 @@ export default class App extends React.Component {
           <Container>
               <Row>
                 {/* <Col xs={6} md={4}></Col> */}
-                <Col xs={12} md={4}>
+                <Col xs={10} md={3}>
                   <ListGroup variant="flush">
                   {channels.map((channel) =>
                     (<ListGroup.Item
@@ -135,6 +173,20 @@ export default class App extends React.Component {
                      className={ channel.id === selectedChannel ? 'active' : null}
                      >
                       {channel.name}</ListGroup.Item>))}
+                    <ListGroup.Item><Button variant="primary" type="submit" block onClick={this.handleShowModal}>Add channel</Button></ListGroup.Item>
+                    <MyModal show={showModal} onFormChange={this.handleChange} onFormSubmit={this.handleAddChannel} newChannelName={newChannelName} onHide={this.handleCloseModal} />
+                  </ListGroup>
+                </Col>
+                <Col xs={2} md={1}>
+                  <ListGroup variant="flush">
+                  {channels.map((channel) =>
+                    (<ListGroup.Item
+                     key={channel.id}
+                     style={{ cursor: 'pointer' }}
+                     onClick={this.handleDeleteChannel(channel.id)}
+                    //  className={ channel.id === selectedChannel ? 'active' : null}
+                     >X</ListGroup.Item>))}
+                    {/* <ListGroup.Item><Button variant="primary" type="submit" block onClick={this.handleAddChannel}>Add channel</Button></ListGroup.Item> */}
                   </ListGroup>
                 </Col>
                 <Col xs={12} md={8}>
@@ -143,10 +195,10 @@ export default class App extends React.Component {
                   </ListGroup>
                   <Form onSubmit={this.handleSubmit}>
                     <Form.Row>
-                      <Col lg={11} xs={12} style={{ marginBottom: '10px' }}>
+                      <Col lg={10} xs={12} style={{ marginBottom: '10px' }}>
                         <Form.Control type="text" placeholder="Readonly input here..." name="message" onChange={this.handleChange} value={message} />
                       </Col>
-                      <Col lg={1} xs={12}>
+                      <Col lg={2} xs={12}>
                         <Button variant="primary" type="submit" block >Send</Button>
                       </Col>
                     </Form.Row>
