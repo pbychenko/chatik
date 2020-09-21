@@ -1,7 +1,6 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import openSocket from 'socket.io-client';
-import axios from 'axios';
 import _ from 'lodash';
 import {
   Spinner,
@@ -16,7 +15,6 @@ import {
 import MyModal from './MyModal.jsx';
 
 const socket = openSocket('http://localhost:8080');
-const baseUrl = 'http://localhost:8080';
 const centerStyle = {
   display: 'flex',
   justifyContent: 'center',
@@ -56,7 +54,6 @@ export default class App extends React.Component {
         // const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
         socket.emit('add user');
         socket.on('user joined', (data) => {
-          // console.log('joined');
           const initCannels = data.channels;
           const initMessages = data.channelsMessages;
           this.setState({
@@ -70,25 +67,17 @@ export default class App extends React.Component {
             selectedChannel: initCannels[0].id,
             visibleMessages: initMessages[initCannels[0].id],
           });
-          // const visibleMessages = messages[selectedChannel];
-          // this.setState({ channelsMessages: messages, visibleMessages });
+          
         });
         socket.on('new message', (messages) => {
-          // console.log(messages);
           const { selectedChannel } = this.state;
           const visibleMessages = messages[selectedChannel];
           this.setState({ channelsMessages: messages, visibleMessages });
         });
         socket.on('new channel', (data) => {
-          console.log(data);
-          // const { selectedChannel } = this.state;
-          // const visibleMessages = messages[selectedChannel];
           this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
         });
         socket.on('delete channel', (data) => {
-          console.log(data);
-          // const { selectedChannel } = this.state;
-          // const visibleMessages = messages[selectedChannel];
           this.setState({ channels: data.channels });
         });
       } catch (error) {
@@ -106,7 +95,6 @@ export default class App extends React.Component {
   handleSubmit = (e) => {
     e.preventDefault();
     const { message, selectedChannel } = this.state;
-    // channelsMessages[selectedChannel].push(message);
     this.setState({ message: '' });
     socket.emit('new message', { channelId: selectedChannel, message });
   }
@@ -118,13 +106,6 @@ export default class App extends React.Component {
   }
 
   handleDeleteChannel = (id) => () => {
-    // console.log(req.body);
-    // const { channelId } = req.body;
-    // channels = channels.filter((el) => el.id !== channelId);
-    // delete channelsMessages[channelId];
-    // console.log(channels);
-    // console.log(channelsMessages);
-    // res.end('tess');
     socket.emit('delete channel', id);
   }
 
@@ -159,7 +140,6 @@ export default class App extends React.Component {
         <>
           <Container>
               <Row>
-                {/* <Col xs={6} md={4}></Col> */}
                 <Col xs={10} md={3}>
                   <ListGroup variant="flush">
                   {channels.map((channel) =>
@@ -181,9 +161,7 @@ export default class App extends React.Component {
                      key={channel.id}
                      style={{ cursor: 'pointer' }}
                      onClick={this.handleDeleteChannel(channel.id)}
-                    //  className={ channel.id === selectedChannel ? 'active' : null}
                      >X</ListGroup.Item>))}
-                    {/* <ListGroup.Item><Button variant="primary" type="submit" block onClick={this.handleAddChannel}>Add channel</Button></ListGroup.Item> */}
                   </ListGroup>
                 </Col>
                 <Col xs={12} md={8}>

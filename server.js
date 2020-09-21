@@ -6,13 +6,13 @@ var path = require('path');
 var cors = require('cors');
 var _ = require('lodash');
 var bodyParser = require('body-parser');
-var jsonParser = bodyParser.json();
-var urlencodedParser = bodyParser.urlencoded({ extended: false });
+// var jsonParser = bodyParser.json();
+// var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 // app.set('view engine', 'pug');
 app.use(cors());
 app.use('/assets', express.static(__dirname + '/dist/public'));
-app.use(bodyParser());
+// app.use(bodyParser());
 // app.use(json());
 // app.use(express.json())
 var port = '8080';
@@ -72,12 +72,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('new channel', (newChannelName) => {
-    // const { channelId, message } = data;
-    // channelsMessages[channelId].push(message);
-    // console.log(channelsMessages);
-    // console.log(newChannelName);
     const channelId = _.uniqueId();
-    // const { channelName } = req.body;
     channels.push({ id: channelId, name: newChannelName });
     channelsMessages[channelId] = ['Новое сообщение'];
 
@@ -86,23 +81,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('delete channel', (channelId) => {
-    // const { channelId, message } = data;
-    // channelsMessages[channelId].push(message);
-    // console.log(channelsMessages);
-    // console.log(newChannelName);
-    // const channelId = _.uniqueId();
-    // // const { channelName } = req.body;
-    // channels.push({ id: channelId, name: newChannelName });
-    // channelsMessages[channelId] = ['Новое сообщение'];
-
     channels = channels.filter((el) => el.id !== channelId);
     delete channelsMessages[channelId];
+    console.log(channels);
 
     socket.emit('delete channel', { channels });
     socket.broadcast.emit('delete channel', { channels });
   });
-
-
 
   socket.on('disconnect', () => {
     console.log(`user has disconnected`);
@@ -121,15 +106,15 @@ app.get('/channelsMessages', cors(), (req, res) => {
   return res.send(channelsMessages);
 });
 
-app.post('/deleteChannel', cors(), urlencodedParser, (req, res) => {
-  console.log(req.body);
-  const { channelId } = req.body;
-  channels = channels.filter((el) => el.id !== channelId);
-  delete channelsMessages[channelId];
-  console.log(channels);
-  console.log(channelsMessages);
-  res.end('tess');
-});
+// app.post('/deleteChannel', cors(), urlencodedParser, (req, res) => {
+//   console.log(req.body);
+//   const { channelId } = req.body;
+//   channels = channels.filter((el) => el.id !== channelId);
+//   delete channelsMessages[channelId];
+//   console.log(channels);
+//   console.log(channelsMessages);
+//   res.end('tess');
+// });
 
 // app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
 //   const channelId = _.uniqueId();
