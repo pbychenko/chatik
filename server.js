@@ -85,6 +85,23 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('new channel', { channels, channelsMessages });
   });
 
+  socket.on('delete channel', (channelId) => {
+    // const { channelId, message } = data;
+    // channelsMessages[channelId].push(message);
+    // console.log(channelsMessages);
+    // console.log(newChannelName);
+    // const channelId = _.uniqueId();
+    // // const { channelName } = req.body;
+    // channels.push({ id: channelId, name: newChannelName });
+    // channelsMessages[channelId] = ['Новое сообщение'];
+
+    channels = channels.filter((el) => el.id !== channelId);
+    delete channelsMessages[channelId];
+
+    socket.emit('delete channel', { channels });
+    socket.broadcast.emit('delete channel', { channels });
+  });
+
 
 
   socket.on('disconnect', () => {

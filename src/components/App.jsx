@@ -85,6 +85,12 @@ export default class App extends React.Component {
           // const visibleMessages = messages[selectedChannel];
           this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
         });
+        socket.on('delete channel', (data) => {
+          console.log(data);
+          // const { selectedChannel } = this.state;
+          // const visibleMessages = messages[selectedChannel];
+          this.setState({ channels: data.channels });
+        });
       } catch (error) {
         this.setState({ requestState: 'failed' });
         throw error;
@@ -112,32 +118,19 @@ export default class App extends React.Component {
   }
 
   handleDeleteChannel = (id) => () => {
-    axios.post(`${baseUrl}/deleteChannel`, {
-      channelId: id.toString(),
-    })
-      .then((res) => {
-        // const { channels } = this.state;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    // console.log(req.body);
+    // const { channelId } = req.body;
+    // channels = channels.filter((el) => el.id !== channelId);
+    // delete channelsMessages[channelId];
+    // console.log(channels);
+    // console.log(channelsMessages);
+    // res.end('tess');
+    socket.emit('delete channel', id);
   }
 
   handleAddChannel = (e) => {
     e.preventDefault();
     const { newChannelName } = this.state;
-    // channelsMessages[selectedChannel].push(message);
-    // this.setState({ newChannelName: '' });
-    // socket.emit('new message', { channelId: selectedChannel, message });
-    // axios.post(`${baseUrl}/addChannel`, {
-    //   channelName: newChannelName,
-    // })
-    //   .then((res) => {
-    //     // const { channels } = this.state;
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //   });
     socket.emit('new channel', newChannelName);
     this.setState({ newChannelName: '', showModal: false });
   }
