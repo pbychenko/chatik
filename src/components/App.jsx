@@ -2,6 +2,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import openSocket from 'socket.io-client';
 import _ from 'lodash';
+import axios from 'axios';
 import {
   Spinner,
   Alert,
@@ -15,6 +16,7 @@ import {
 import MyModal from './MyModal.jsx';
 
 const socket = openSocket('http://localhost:8080');
+const baseUrl = 'http://localhost:8080';
 const centerStyle = {
   display: 'flex',
   justifyContent: 'center',
@@ -47,27 +49,56 @@ export default class App extends React.Component {
     };
   }
 
+  // componentDidMount() {
+  //   this.setState({ requestState: 'processing' }, async () => {
+  //     try {
+  //       // const initCannels = await axios.get(`${baseUrl}/channels`);
+  //       // const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
+  //       socket.emit('add user');
+  //       socket.on('user joined', (data) => {
+  //         const initCannels = data.channels;
+  //         const initMessages = data.channelsMessages;
+  //         this.setState({
+  //           requestState: 'success',
+  //           // channels: initCannels.data,
+  //           // channelsMessages: initMessages.data,
+  //           // selectedChannel: initCannels.data[0].id,
+  //           // visibleMessages: initMessages.data[initCannels.data[0].id],
+  //           channels: initCannels,
+  //           channelsMessages: initMessages,
+  //           selectedChannel: initCannels[0].id,
+  //           visibleMessages: initMessages[initCannels[0].id],
+  //         });
+  //       });
+  //       socket.on('new message', (messages) => {
+  //         const { selectedChannel } = this.state;
+  //         const visibleMessages = messages[selectedChannel];
+  //         this.setState({ channelsMessages: messages, visibleMessages });
+  //       });
+  //       socket.on('new channel', (data) => {
+  //         this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
+  //       });
+  //       socket.on('delete channel', (data) => {
+  //         this.setState({ channels: data.channels });
+  //       });
+  //     } catch (error) {
+  //       this.setState({ requestState: 'failed' });
+  //       throw error;
+  //     }
+  //   });
+  // }
+
   componentDidMount() {
     this.setState({ requestState: 'processing' }, async () => {
       try {
-        // const initCannels = await axios.get(`${baseUrl}/channels`);
-        // const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
-        socket.emit('add user');
-        socket.on('user joined', (data) => {
-          const initCannels = data.channels;
-          const initMessages = data.channelsMessages;
-          this.setState({
-            requestState: 'success',
-            // channels: initCannels.data,
-            // channelsMessages: initMessages.data,
-            // selectedChannel: initCannels.data[0].id,
-            // visibleMessages: initMessages.data[initCannels.data[0].id],
-            channels: initCannels,
-            channelsMessages: initMessages,
-            selectedChannel: initCannels[0].id,
-            visibleMessages: initMessages[initCannels[0].id],
-          });
-          
+        const initCannels = await axios.get(`${baseUrl}/channels`);
+        const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
+        this.setState({
+          requestState: 'success',
+          channels: initCannels.data,
+          channelsMessages: initMessages.data,
+          selectedChannel: initCannels.data[0].id,
+          visibleMessages: initMessages.data[initCannels.data[0].id],
         });
         socket.on('new message', (messages) => {
           const { selectedChannel } = this.state;
@@ -106,14 +137,37 @@ export default class App extends React.Component {
   }
 
   handleDeleteChannel = (id) => () => {
-    socket.emit('delete channel', id);
+    axios.post(`${baseUrl}/deleteChannel`, {
+      channelId: id,
+    })
+    .then((res) => {
+      // const { channels } = this.state;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
+    // socket.emit('delete channel', id);
   }
 
   handleAddChannel = (e) => {
     e.preventDefault();
     const { newChannelName } = this.state;
-    socket.emit('new channel', newChannelName);
-    this.setState({ newChannelName: '', showModal: false });
+    axios.post(`${baseUrl}/addChannel`, {
+      channelName: newChannelName,
+    })
+      .then((res) => {
+        // console.log('here');
+        // socket.emit('new channel', newChannelName);
+        console.log('here');
+        this.setState({ newChannelName: '', showModal: false });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    // socket.emit('new channel', newChannelName);
+    // this.setState({ newChannelName: '', showModal: false });
   }
 
   handleCloseModal = () => {

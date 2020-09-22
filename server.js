@@ -6,15 +6,15 @@ var path = require('path');
 var cors = require('cors');
 var _ = require('lodash');
 var bodyParser = require('body-parser');
-// var jsonParser = bodyParser.json();
-// var urlencodedParser = bodyParser.urlencoded({ extended: false });
+var jsonParser = bodyParser.json();
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 // app.set('view engine', 'pug');
 app.use(cors());
 app.use('/assets', express.static(__dirname + '/dist/public'));
-// app.use(bodyParser());
+app.use(bodyParser());
 // app.use(json());
-// app.use(express.json())
+app.use(express.json())
 var port = '8080';
 
 // const messages = ['Привет мля'];
@@ -71,23 +71,24 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('new message', channelsMessages);
   });
 
-  socket.on('new channel', (newChannelName) => {
-    const channelId = _.uniqueId();
-    channels.push({ id: channelId, name: newChannelName });
-    channelsMessages[channelId] = ['Новое сообщение'];
+  // socket.on('new channel', () => {
+  //   // const channelId = _.uniqueId();
+  //   // channels.push({ id: channelId, name: newChannelName });
+  //   // channelsMessages[channelId] = ['Новое сообщение'];
+  //   console.log(channels);
 
-    socket.emit('new channel', { channels, channelsMessages });
-    socket.broadcast.emit('new channel', { channels, channelsMessages });
-  });
+  //   socket.emit('new channel', { channels, channelsMessages });
+  //   socket.broadcast.emit('new channel', { channels, channelsMessages });
+  // });
 
-  socket.on('delete channel', (channelId) => {
-    channels = channels.filter((el) => el.id !== channelId);
-    delete channelsMessages[channelId];
-    console.log(channels);
+  // socket.on('delete channel', (channelId) => {
+  //   channels = channels.filter((el) => el.id !== channelId);
+  //   delete channelsMessages[channelId];
+  //   console.log(channels);
 
-    socket.emit('delete channel', { channels });
-    socket.broadcast.emit('delete channel', { channels });
-  });
+  //   socket.emit('delete channel', { channels });
+  //   socket.broadcast.emit('delete channel', { channels });
+  // });
 
   socket.on('disconnect', () => {
     console.log(`user has disconnected`);
@@ -106,22 +107,24 @@ app.get('/channelsMessages', cors(), (req, res) => {
   return res.send(channelsMessages);
 });
 
-// app.post('/deleteChannel', cors(), urlencodedParser, (req, res) => {
-//   console.log(req.body);
-//   const { channelId } = req.body;
-//   channels = channels.filter((el) => el.id !== channelId);
-//   delete channelsMessages[channelId];
-//   console.log(channels);
-//   console.log(channelsMessages);
-//   res.end('tess');
-// });
+app.post('/deleteChannel', cors(), urlencodedParser, (req, res) => {
+  const { channelId } = req.body;
+  channels = channels.filter((el) => el.id !== channelId);
+  console.log(channels);
+  delete channelsMessages[channelId];
+  io.emit('delete channel', { channels, channelsMessages });
+  res.sendStatus(200);
+});
 
-// app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
-//   const channelId = _.uniqueId();
-//   const { channelName } = req.body;
-//   channels.push({ id: channelId, name: channelName });
-//   channelsMessages[channelId] = ['Новое сообщение'];
-// });
+app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
+  const channelId = _.uniqueId();
+  const { channelName } = req.body;
+  channels.push({ id: channelId, name: channelName });
+  channelsMessages[channelId] = ['Новое сообщение'];
+  console.log(channels);
+  io.emit('new channel', { channels, channelsMessages });
+  res.sendStatus(200);
+});
 
 http.listen(port, () => {
   console.log(`Server has been started on ${port}`);
