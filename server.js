@@ -62,14 +62,14 @@ io.on('connection', (socket) => {
     // socket.broadcast.emit('user joined', { channels, channelsMessages });
   });
 
-  socket.on('new message', (data) => {
-    const { channelId, message } = data;
-    channelsMessages[channelId].push(message);
-    console.log(channelsMessages);
+  // socket.on('new message', (data) => {
+  //   const { channelId, message } = data;
+  //   channelsMessages[channelId].push(message);
+  //   console.log(channelsMessages);
 
-    socket.emit('new message', channelsMessages);
-    socket.broadcast.emit('new message', channelsMessages);
-  });
+  //   socket.emit('new message', channelsMessages);
+  //   socket.broadcast.emit('new message', channelsMessages);
+  // });
 
   // socket.on('new channel', () => {
   //   // const channelId = _.uniqueId();
@@ -123,6 +123,16 @@ app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
   channelsMessages[channelId] = ['Новое сообщение'];
   console.log(channels);
   io.emit('new channel', { channels, channelsMessages });
+  res.sendStatus(200);
+});
+
+app.post('/newMessage', cors(), urlencodedParser, (req, res) => {
+  const { channelId, message } = req.body;
+  channelsMessages[channelId].push(message);
+  console.log(channelsMessages);
+
+  io.emit('new message', channelsMessages);
+  // socket.broadcast.emit('new message', channelsMessages);
   res.sendStatus(200);
 });
 

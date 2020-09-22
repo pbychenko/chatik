@@ -126,8 +126,18 @@ export default class App extends React.Component {
   handleSubmit = (e) => {
     e.preventDefault();
     const { message, selectedChannel } = this.state;
-    this.setState({ message: '' });
-    socket.emit('new message', { channelId: selectedChannel, message });
+    // this.setState({ message: '' });
+    // socket.emit('new message', { channelId: selectedChannel, message });
+    axios.post(`${baseUrl}/newMessage`, { channelId: selectedChannel, message })
+      .then((res) => {
+        // console.log('here');
+        // socket.emit('new channel', newChannelName);
+        // console.log('here');
+        this.setState({ message: '' });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   handleSelectChannels = (id) => () => {
