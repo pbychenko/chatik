@@ -1,4 +1,4 @@
 {
   "verbose": true,
-  "watch": ["./server.js", "webpack.config.js"]
+  "watch": ["./server/index.js", "webpack.config.js"]
 }

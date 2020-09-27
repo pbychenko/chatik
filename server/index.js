@@ -1,20 +1,20 @@
-var express = require('express');
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var path = require('path');
-var cors = require('cors');
-var _ = require('lodash');
-var bodyParser = require('body-parser');
-var jsonParser = bodyParser.json();
-var urlencodedParser = bodyParser.urlencoded({ extended: false });
+const express = require('express');
+const app = require('express')();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+// const path = require('path');
+const cors = require('cors');
+const _ = require('lodash');
+const bodyParser = require('body-parser');
+// const jsonParser = bodyParser.json();
+const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 // app.set('view engine', 'pug');
 app.use(cors());
 app.use('/assets', express.static(__dirname + '/dist/public'));
 app.use(bodyParser());
 // app.use(json());
-app.use(express.json())
+// app.use(express.json())
 var port = '8080';
 
 // const messages = ['Привет мля'];
@@ -28,7 +28,7 @@ let channels = [
   },
   {
     id: channel2Id,
-    name: 'test',
+    name: 'temp',
   },
 ];
 
@@ -36,6 +36,25 @@ let channelsMessages = {
   [channel1Id]: ['канал general'],
   [channel2Id]: ['канал test'],
 };
+
+const users = [
+  {
+    id:  _.uniqueId(),
+    name: 'Tuktuk',
+  },
+  {
+    id:  _.uniqueId(),
+    name: 'Bumbum',
+  },
+  {
+    id:  _.uniqueId(),
+    name: 'Tiktok',
+  },
+];
+// let users = {
+//   [channel1Id]: ['канал general'],
+//   [channel2Id]: ['канал test'],
+// };
 
 // const state = {
 //   channels: [
