@@ -14,6 +14,7 @@ import {
   Button,
 } from 'react-bootstrap';
 import MyModal from './MyModal.jsx';
+import RegisterModal from './RegisterModal.jsx';
 
 const socket = openSocket('http://localhost:8080');
 const baseUrl = 'http://localhost:8080';
@@ -37,12 +38,14 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      registered: false,
       channels: [],
       channelsMessages: [],
       visibleMessages: [],
       selectedChannel: '',
       message: '',
       showModal: false,
+      newUserName: '',
       newChannelName: '',
       requestState: '',
       showErrorBlock: false,
@@ -180,6 +183,26 @@ export default class App extends React.Component {
     // this.setState({ newChannelName: '', showModal: false });
   }
 
+  handleAddUser = (e) => {
+    e.preventDefault();
+    const { newUserName } = this.state;
+    axios.post(`${baseUrl}/addUser`, {
+      userName: newUserName,
+    })
+      .then((res) => {
+        // console.log('here');
+        // socket.emit('new channel', newChannelName);
+        console.log('heres');
+        this.setState({ newUserName: '', registered: true });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    // socket.emit('new channel', newChannelName);
+    // this.setState({ newChannelName: '', showModal: false });
+  }
+
   handleCloseModal = () => {
     this.setState({ showModal: false });
   }
@@ -189,7 +212,14 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { visibleMessages, message, requestState, channels, selectedChannel, showModal, newChannelName } = this.state;
+    const { visibleMessages, message, requestState, channels, selectedChannel, showModal, newChannelName, registered, newUserName } = this.state;
+
+    if (!registered) {
+      return (
+        <RegisterModal onFormChange={this.handleChange} onFormSubmit={this.handleAddUser} newUserName={newUserName} onHide={this.handleCloseModal} />
+      );
+    }
+
 
     if (requestState === 'processing') {
       return (

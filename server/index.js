@@ -37,7 +37,7 @@ let channelsMessages = {
   [channel2Id]: ['канал test'],
 };
 
-const users = [
+let users = [
   {
     id:  _.uniqueId(),
     name: 'Tuktuk',
@@ -51,10 +51,6 @@ const users = [
     name: 'Tiktok',
   },
 ];
-// let users = {
-//   [channel1Id]: ['канал general'],
-//   [channel2Id]: ['канал test'],
-// };
 
 // const state = {
 //   channels: [
@@ -142,6 +138,15 @@ app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
   channelsMessages[channelId] = ['Новое сообщение'];
   console.log(channels);
   io.emit('new channel', { channels, channelsMessages });
+  res.sendStatus(200);
+});
+
+app.post('/addUser', cors(), urlencodedParser, (req, res) => {
+  const userId = _.uniqueId();
+  const { userName } = req.body;
+  users.push({ id: userId, name: userName });
+  console.log(users);
+  // io.emit('new channel', { channels, channelsMessages });
   res.sendStatus(200);
 });
 
