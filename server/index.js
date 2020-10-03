@@ -33,9 +33,13 @@ let channels = [
 ];
 
 let channelsMessages = {
-  [channel1Id]: ['канал general'],
-  [channel2Id]: ['канал test'],
+  [channel1Id]: [],
+  [channel2Id]: [],
 };
+// let message = {
+//   user:
+//   text,
+// }
 
 let users = [
   {
@@ -135,7 +139,7 @@ app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
   const channelId = _.uniqueId();
   const { channelName } = req.body;
   channels.push({ id: channelId, name: channelName });
-  channelsMessages[channelId] = ['Новое сообщение'];
+  // channelsMessages[channelId] = ['Новое сообщение'];
   console.log(channels);
   io.emit('new channel', { channels, channelsMessages });
   res.sendStatus(200);
@@ -151,8 +155,9 @@ app.post('/addUser', cors(), urlencodedParser, (req, res) => {
 });
 
 app.post('/newMessage', cors(), urlencodedParser, (req, res) => {
-  const { channelId, message } = req.body;
-  channelsMessages[channelId].push(message);
+  const { channelId, message, userName } = req.body;
+  const newMessage = { user: userName, text: message };
+  channelsMessages[channelId].push(newMessage);
   console.log(channelsMessages);
 
   io.emit('new message', channelsMessages);

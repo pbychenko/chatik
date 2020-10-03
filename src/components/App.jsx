@@ -15,6 +15,7 @@ import {
 } from 'react-bootstrap';
 import MyModal from './MyModal.jsx';
 import RegisterModal from './RegisterModal.jsx';
+import Message from './Message.jsx';
 
 const socket = openSocket('http://localhost:8080');
 const baseUrl = 'http://localhost:8080';
@@ -45,7 +46,7 @@ export default class App extends React.Component {
       selectedChannel: '',
       message: '',
       showModal: false,
-      newUserName: '',
+      userName: '',
       newChannelName: '',
       requestState: '',
       showErrorBlock: false,
@@ -128,10 +129,11 @@ export default class App extends React.Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { message, selectedChannel } = this.state;
+    const { message, selectedChannel, userName } = this.state;
     // this.setState({ message: '' });
     // socket.emit('new message', { channelId: selectedChannel, message });
-    axios.post(`${baseUrl}/newMessage`, { channelId: selectedChannel, message })
+    // axios.post(`${baseUrl}/newMessage`, { channelId: selectedChannel, message })
+    axios.post(`${baseUrl}/newMessage`, { channelId: selectedChannel, message, userName })
       .then((res) => {
         // console.log('here');
         // socket.emit('new channel', newChannelName);
@@ -185,15 +187,13 @@ export default class App extends React.Component {
 
   handleAddUser = (e) => {
     e.preventDefault();
-    const { newUserName } = this.state;
-    axios.post(`${baseUrl}/addUser`, {
-      userName: newUserName,
-    })
+    const { userName } = this.state;
+    axios.post(`${baseUrl}/addUser`, { userName })
       .then((res) => {
         // console.log('here');
         // socket.emit('new channel', newChannelName);
         console.log('heres');
-        this.setState({ newUserName: '', registered: true });
+        this.setState({ registered: true });
       })
       .catch((error) => {
         console.log(error);
@@ -212,11 +212,12 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { visibleMessages, message, requestState, channels, selectedChannel, showModal, newChannelName, registered, newUserName } = this.state;
+    console.log(visibleMessages);
+    const { visibleMessages, message, requestState, channels, selectedChannel, showModal, newChannelName, registered, userName } = this.state;
 
     if (!registered) {
       return (
-        <RegisterModal onFormChange={this.handleChange} onFormSubmit={this.handleAddUser} newUserName={newUserName} onHide={this.handleCloseModal} />
+        <RegisterModal onFormChange={this.handleChange} onFormSubmit={this.handleAddUser} userName={userName} onHide={this.handleCloseModal} />
       );
     }
 
@@ -260,7 +261,10 @@ export default class App extends React.Component {
                 </Col>
                 <Col xs={12} md={8}>
                   <ListGroup variant="flush">
-                  {visibleMessages.map((message) => (<ListGroup.Item key={_.uniqueId()} style={{ wordWrap: 'break-word', textAlign: 'right' }}>{message}</ListGroup.Item>))}
+                  {/* {visibleMessages.map((message) => (
+                    <ListGroup.Item key={_.uniqueId()} style={{ wordWrap: 'break-word', textAlign: 'right' }}>
+                      <Message userName={message.user} text= {message.text} />{message}
+                    </ListGroup.Item>))} */}
                   </ListGroup>
                   <Form onSubmit={this.handleSubmit}>
                     <Form.Row>
