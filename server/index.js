@@ -139,7 +139,7 @@ app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
   const channelId = _.uniqueId();
   const { channelName } = req.body;
   channels.push({ id: channelId, name: channelName });
-  // channelsMessages[channelId] = ['Новое сообщение'];
+  channelsMessages[channelId] = [];
   console.log(channels);
   io.emit('new channel', { channels, channelsMessages });
   res.sendStatus(200);
@@ -155,8 +155,8 @@ app.post('/addUser', cors(), urlencodedParser, (req, res) => {
 });
 
 app.post('/newMessage', cors(), urlencodedParser, (req, res) => {
-  const { channelId, message, userName } = req.body;
-  const newMessage = { user: userName, text: message };
+  const { channelId, message, userName, messageDate } = req.body;
+  const newMessage = { user: userName, text: message, date: messageDate };
   channelsMessages[channelId].push(newMessage);
   console.log(channelsMessages);
 

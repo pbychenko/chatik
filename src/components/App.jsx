@@ -39,14 +39,14 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      registered: false,
+      registered: sessionStorage.registered,
       channels: [],
       channelsMessages: [],
       visibleMessages: [],
       selectedChannel: '',
       message: '',
       showModal: false,
-      userName: '',
+      userName: sessionStorage.user,
       newChannelName: '',
       requestState: '',
       showErrorBlock: false,
@@ -107,6 +107,7 @@ export default class App extends React.Component {
         socket.on('new message', (messages) => {
           const { selectedChannel } = this.state;
           const visibleMessages = messages[selectedChannel];
+          // console.log(visibleMessages);
           this.setState({ channelsMessages: messages, visibleMessages });
         });
         socket.on('new channel', (data) => {
@@ -130,10 +131,11 @@ export default class App extends React.Component {
   handleSubmit = (e) => {
     e.preventDefault();
     const { message, selectedChannel, userName } = this.state;
+    const messageDate = new Date();
     // this.setState({ message: '' });
     // socket.emit('new message', { channelId: selectedChannel, message });
     // axios.post(`${baseUrl}/newMessage`, { channelId: selectedChannel, message })
-    axios.post(`${baseUrl}/newMessage`, { channelId: selectedChannel, message, userName })
+    axios.post(`${baseUrl}/newMessage`, { channelId: selectedChannel, message, userName, messageDate })
       .then((res) => {
         // console.log('here');
         // socket.emit('new channel', newChannelName);
@@ -147,6 +149,7 @@ export default class App extends React.Component {
 
   handleSelectChannels = (id) => () => {
     const { channelsMessages } = this.state;
+    console.log(channelsMessages);
     const visibleMessages = channelsMessages[id];
     this.setState({ visibleMessages, selectedChannel: id });
   }
@@ -155,12 +158,12 @@ export default class App extends React.Component {
     axios.post(`${baseUrl}/deleteChannel`, {
       channelId: id,
     })
-    .then((res) => {
-      // const { channels } = this.state;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+      .then((res) => {
+        // const { channels } = this.state;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     // socket.emit('delete channel', id);
   }
@@ -178,7 +181,7 @@ export default class App extends React.Component {
         this.setState({ newChannelName: '', showModal: false });
       })
       .catch((error) => {
-        console.log(error);
+        throw error;
       });
 
     // socket.emit('new channel', newChannelName);
@@ -192,12 +195,16 @@ export default class App extends React.Component {
       .then((res) => {
         // console.log('here');
         // socket.emit('new channel', newChannelName);
-        console.log('heres');
+        // console.log('heres');
         this.setState({ registered: true });
+        sessionStorage.setItem('registered', true);
+        sessionStorage.setItem('user', userName);
       })
       .catch((error) => {
-        console.log(error);
+        throw error;
       });
+    // localStorage.setItem('user', 'Pavel');
+    // console.log(localStorage.user);
 
     // socket.emit('new channel', newChannelName);
     // this.setState({ newChannelName: '', showModal: false });
@@ -212,8 +219,8 @@ export default class App extends React.Component {
   }
 
   render() {
-    console.log(visibleMessages);
     const { visibleMessages, message, requestState, channels, selectedChannel, showModal, newChannelName, registered, userName } = this.state;
+    // console.log(visibleMessages);
 
     if (!registered) {
       return (
@@ -261,10 +268,10 @@ export default class App extends React.Component {
                 </Col>
                 <Col xs={12} md={8}>
                   <ListGroup variant="flush">
-                  {/* {visibleMessages.map((message) => (
+                  {visibleMessages.map((message) => (
                     <ListGroup.Item key={_.uniqueId()} style={{ wordWrap: 'break-word', textAlign: 'right' }}>
-                      <Message userName={message.user} text= {message.text} />{message}
-                    </ListGroup.Item>))} */}
+                      <Message userName={message.user} text={message.text} date={message.date} />
+                    </ListGroup.Item>))}
                   </ListGroup>
                   <Form onSubmit={this.handleSubmit}>
                     <Form.Row>
