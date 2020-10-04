@@ -5,7 +5,7 @@ const MyModal = (props) => {
   const {
     onFormChange, onFormSubmit, newUserName: userName,
   } = props;
-  
+
   return (
   <Modal show={true} showsize="lg"
       aria-labelledby="contained-modal-title-vcenter"

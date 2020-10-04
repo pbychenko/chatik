@@ -15,7 +15,7 @@ app.use('/assets', express.static(__dirname + '/dist/public'));
 app.use(bodyParser());
 // app.use(json());
 // app.use(express.json())
-var port = '8080';
+const port = '8080';
 
 // const messages = ['Привет мля'];
 const channel1Id = _.uniqueId();
@@ -32,7 +32,7 @@ let channels = [
   },
 ];
 
-let channelsMessages = {
+const channelsMessages = {
   [channel1Id]: [],
   [channel2Id]: [],
 };
@@ -41,17 +41,17 @@ let channelsMessages = {
 //   text,
 // }
 
-let users = [
+const users = [
   {
-    id:  _.uniqueId(),
+    id: _.uniqueId(),
     name: 'Tuktuk',
   },
   {
-    id:  _.uniqueId(),
+    id: _.uniqueId(),
     name: 'Bumbum',
   },
   {
-    id:  _.uniqueId(),
+    id: _.uniqueId(),
     name: 'Tiktok',
   },
 ];
@@ -74,7 +74,7 @@ let users = [
 // };
 
 io.on('connection', (socket) => {
-  console.log(`user connected`);
+  console.log('user connected');
 
   socket.on('add user', () => {
     socket.emit('user joined', { channels, channelsMessages });
@@ -110,7 +110,7 @@ io.on('connection', (socket) => {
   // });
 
   socket.on('disconnect', () => {
-    console.log(`user has disconnected`);
+    console.log('user has disconnected');
   });
 });
 
@@ -118,13 +118,9 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/channels', cors(), (req, res) => {
-  return res.send(channels);
-});
+app.get('/channels', cors(), (req, res) => res.send(channels));
 
-app.get('/channelsMessages', cors(), (req, res) => {
-  return res.send(channelsMessages);
-});
+app.get('/channelsMessages', cors(), (req, res) => res.send(channelsMessages));
 
 app.post('/deleteChannel', cors(), urlencodedParser, (req, res) => {
   const { channelId } = req.body;
@@ -155,7 +151,12 @@ app.post('/addUser', cors(), urlencodedParser, (req, res) => {
 });
 
 app.post('/newMessage', cors(), urlencodedParser, (req, res) => {
-  const { channelId, message, userName, messageDate } = req.body;
+  const {
+    channelId,
+    message,
+    userName,
+    messageDate,
+  } = req.body;
   const newMessage = { user: userName, text: message, date: messageDate };
   channelsMessages[channelId].push(newMessage);
   console.log(channelsMessages);

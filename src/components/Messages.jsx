@@ -1,9 +1,11 @@
 import React from 'react';
+import _ from 'lodash';
 import { ListGroup } from 'react-bootstrap';
 import Message from './Message.jsx';
 
 const Messages = (props) => {
   const { visibleMessages } = props;
+  console.log(_.uniqueId());
 
   return (
     <ListGroup variant="flush">

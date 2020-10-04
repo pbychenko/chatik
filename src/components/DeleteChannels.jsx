@@ -3,18 +3,14 @@ import {
   ListGroup,
 } from 'react-bootstrap';
 
-const DeleteChannels = (props) => {
-  const { channels, deleteChannel } = props;
-
-  return (
+const DeleteChannels = ({ channels, deleteChannel }) => (
     <ListGroup variant="flush">
-    {channels.map((channel) =>
-      (<ListGroup.Item
+    {channels.map((channel) => (
+    <ListGroup.Item
        key={channel.id}
        style={{ cursor: 'pointer' }}
        onClick={deleteChannel(channel.id)}
        >X</ListGroup.Item>))}
     </ListGroup>);
-};
 
 export default DeleteChannels;
