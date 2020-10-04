@@ -10,12 +10,14 @@ import {
   Container,
   Row,
   Col,
-  Form,
   Button,
 } from 'react-bootstrap';
 import MyModal from './MyModal.jsx';
 import RegisterModal from './RegisterModal.jsx';
-import Message from './Message.jsx';
+import Channels from './Channels.jsx';
+import DeleteChannels from './DeleteChannels.jsx';
+import Messages from './Messages.jsx';
+import MessageForm from './MessageForm.jsx';
 
 const socket = openSocket('http://localhost:8080');
 const baseUrl = 'http://localhost:8080';
@@ -39,14 +41,14 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      registered: sessionStorage.registered,
+      registered: sessionStorage.getItem('registered'),
       channels: [],
       channelsMessages: [],
       visibleMessages: [],
       selectedChannel: '',
       message: '',
       showModal: false,
-      userName: sessionStorage.user,
+      userName: sessionStorage.getItem('user'),
       newChannelName: '',
       requestState: '',
       showErrorBlock: false,
@@ -228,7 +230,6 @@ export default class App extends React.Component {
       );
     }
 
-
     if (requestState === 'processing') {
       return (
         <div className="text-center" style = {centerStyle}>
@@ -244,45 +245,17 @@ export default class App extends React.Component {
               <Row>
                 <Col xs={10} md={3}>
                   <ListGroup variant="flush">
-                  {channels.map((channel) =>
-                    (<ListGroup.Item
-                     key={channel.id}
-                     style={{ wordWrap: 'break-word', textAlign: 'left' }}
-                     onClick={this.handleSelectChannels(channel.id)}
-                     className={ channel.id === selectedChannel ? 'active' : null}
-                     >
-                      {channel.name}</ListGroup.Item>))}
+                    <Channels channels={channels} selectedChannel={selectedChannel} selectChannel={this.handleSelectChannels} />
                     <ListGroup.Item><Button variant="primary" type="submit" block onClick={this.handleShowModal}>Add channel</Button></ListGroup.Item>
                     <MyModal show={showModal} onFormChange={this.handleChange} onFormSubmit={this.handleAddChannel} newChannelName={newChannelName} onHide={this.handleCloseModal} />
                   </ListGroup>
                 </Col>
                 <Col xs={2} md={1}>
-                  <ListGroup variant="flush">
-                  {channels.map((channel) =>
-                    (<ListGroup.Item
-                     key={channel.id}
-                     style={{ cursor: 'pointer' }}
-                     onClick={this.handleDeleteChannel(channel.id)}
-                     >X</ListGroup.Item>))}
-                  </ListGroup>
+                  <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} />
                 </Col>
                 <Col xs={12} md={8}>
-                  <ListGroup variant="flush">
-                  {visibleMessages.map((message) => (
-                    <ListGroup.Item key={_.uniqueId()} style={{ wordWrap: 'break-word', textAlign: 'right' }}>
-                      <Message userName={message.user} text={message.text} date={message.date} />
-                    </ListGroup.Item>))}
-                  </ListGroup>
-                  <Form onSubmit={this.handleSubmit}>
-                    <Form.Row>
-                      <Col lg={10} xs={12} style={{ marginBottom: '10px' }}>
-                        <Form.Control type="text" placeholder="Readonly input here..." name="message" onChange={this.handleChange} value={message} />
-                      </Col>
-                      <Col lg={2} xs={12}>
-                        <Button variant="primary" type="submit" block >Send</Button>
-                      </Col>
-                    </Form.Row>
-                  </Form>
+                  <Messages visibleMessages={visibleMessages} />
+                  <MessageForm message={message} submitMessage={this.handleSubmit} writeMessage={this.handleChange} />
                 </Col>
               </Row>
             </Container>
