@@ -17,6 +17,7 @@ import Channels from './Channels.jsx';
 import DeleteChannels from './DeleteChannels.jsx';
 import Messages from './Messages.jsx';
 import MessageForm from './MessageForm.jsx';
+import Users from './Users.jsx';
 
 const socket = openSocket('http://localhost:8080');
 const baseUrl = 'http://localhost:8080';
@@ -38,6 +39,8 @@ export default class App extends React.Component {
       registered: sessionStorage.getItem('registered'),
       channels: [],
       channelsMessages: [],
+      users: [],
+      selectedUser: '',
       visibleMessages: [],
       selectedChannel: '',
       message: '',
@@ -92,9 +95,11 @@ export default class App extends React.Component {
     this.setState({ requestState: 'processing' }, async () => {
       try {
         const initCannels = await axios.get(`${baseUrl}/channels`);
+        const initUsers = await axios.get(`${baseUrl}/users`);
         const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
         this.setState({
           requestState: 'success',
+          users: initUsers.data,
           channels: initCannels.data,
           channelsMessages: initMessages.data,
           selectedChannel: initCannels.data[0].id,
@@ -103,7 +108,6 @@ export default class App extends React.Component {
         socket.on('new message', (messages) => {
           const { selectedChannel } = this.state;
           const visibleMessages = messages[selectedChannel];
-          // console.log(visibleMessages);
           this.setState({ channelsMessages: messages, visibleMessages });
         });
         socket.on('new channel', (data) => {
@@ -153,6 +157,14 @@ export default class App extends React.Component {
     console.log(channelsMessages);
     const visibleMessages = channelsMessages[id];
     this.setState({ visibleMessages, selectedChannel: id });
+  }
+
+  handleSelectUser = (id) => () => {
+    // const { channelsMessages } = this.state;
+    // console.log(channelsMessages);
+    // const visibleMessages = channelsMessages[id];
+    // this.setState({ visibleMessages, selectedChannel: id });
+    this.setState({ selectedUser: id });
   }
 
   handleDeleteChannel = (id) => () => {
@@ -222,7 +234,7 @@ export default class App extends React.Component {
   render() {
     const {
       visibleMessages, message, requestState, channels, selectedChannel, showModal,
-      newChannelName, registered, userName,
+      newChannelName, registered, userName, users, selectedUser,
     } = this.state;
     // console.log(visibleMessages);
 
@@ -260,6 +272,10 @@ export default class App extends React.Component {
                      onHide={this.handleCloseModal}
                     />
                   </ListGroup>
+                  <Users users={users}
+                      selectedUser={selectedUser}
+                      selectUser={this.handleSelectUser}
+                  />
                 </Col>
                 <Col xs={2} md={1}>
                   <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} />

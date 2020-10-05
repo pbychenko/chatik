@@ -13,15 +13,11 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false });
 app.use(cors());
 app.use('/assets', express.static(__dirname + '/dist/public'));
 app.use(bodyParser());
-// app.use(json());
-// app.use(express.json())
 const port = '8080';
-
-// const messages = ['Привет мля'];
 const channel1Id = _.uniqueId();
 const channel2Id = _.uniqueId();
 
-let channels = [
+let commonChannels = [
   {
     id: channel1Id,
     name: 'general',
@@ -36,23 +32,17 @@ const channelsMessages = {
   [channel1Id]: [],
   [channel2Id]: [],
 };
-// let message = {
-//   user:
-//   text,
-// }
 
 const users = [
   {
     id: _.uniqueId(),
     name: 'Tuktuk',
+    channels: [channel1Id, channel2Id],
   },
   {
     id: _.uniqueId(),
     name: 'Bumbum',
-  },
-  {
-    id: _.uniqueId(),
-    name: 'Tiktok',
+    channels: [channel1Id, channel2Id],
   },
 ];
 
@@ -77,7 +67,7 @@ io.on('connection', (socket) => {
   console.log('user connected');
 
   socket.on('add user', () => {
-    socket.emit('user joined', { channels, channelsMessages });
+    socket.emit('user joined', { channels: commonChannels, channelsMessages });
     // socket.broadcast.emit('user joined', { channels, channelsMessages });
   });
 
@@ -118,33 +108,34 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/channels', cors(), (req, res) => res.send(channels));
+app.get('/channels', cors(), (req, res) => res.send(commonChannels));
+app.get('/users', cors(), (req, res) => res.send(users));
 
 app.get('/channelsMessages', cors(), (req, res) => res.send(channelsMessages));
 
 app.post('/deleteChannel', cors(), urlencodedParser, (req, res) => {
   const { channelId } = req.body;
-  channels = channels.filter((el) => el.id !== channelId);
-  console.log(channels);
+  commonChannels = commonChannels.filter((el) => el.id !== channelId);
+  console.log(commonChannels);
   delete channelsMessages[channelId];
-  io.emit('delete channel', { channels, channelsMessages });
+  io.emit('delete channel', { channels: commonChannels, channelsMessages });
   res.sendStatus(200);
 });
 
 app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
   const channelId = _.uniqueId();
   const { channelName } = req.body;
-  channels.push({ id: channelId, name: channelName });
+  commonChannels.push({ id: channelId, name: channelName });
   channelsMessages[channelId] = [];
-  console.log(channels);
-  io.emit('new channel', { channels, channelsMessages });
+  console.log(commonChannels);
+  io.emit('new channel', { channels: commonChannels, channelsMessages });
   res.sendStatus(200);
 });
 
 app.post('/addUser', cors(), urlencodedParser, (req, res) => {
   const userId = _.uniqueId();
   const { userName } = req.body;
-  users.push({ id: userId, name: userName });
+  users.push({ id: userId, name: userName, channels: [channel1Id, channel2Id] });
   console.log(users);
   // io.emit('new channel', { channels, channelsMessages });
   res.sendStatus(200);
