@@ -1,7 +1,6 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import openSocket from 'socket.io-client';
-import _ from 'lodash';
 import axios from 'axios';
 import {
   Spinner,
@@ -10,11 +9,14 @@ import {
   Container,
   Row,
   Col,
-  Form,
   Button,
 } from 'react-bootstrap';
 import MyModal from './MyModal.jsx';
 import RegisterModal from './RegisterModal.jsx';
+import Channels from './Channels.jsx';
+import DeleteChannels from './DeleteChannels.jsx';
+import Messages from './Messages.jsx';
+import MessageForm from './MessageForm.jsx';
 
 const socket = openSocket('http://localhost:8080');
 const baseUrl = 'http://localhost:8080';
@@ -29,23 +31,18 @@ const spinnerSizeStyle = {
   height: '13rem',
 };
 
-// const borde = {
-//   borderStyle: 'solid',
-//   borderColor: 'green',
-// };
-
 export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      registered: false,
+      registered: sessionStorage.getItem('registered'),
       channels: [],
       channelsMessages: [],
       visibleMessages: [],
       selectedChannel: '',
       message: '',
       showModal: false,
-      newUserName: '',
+      userName: sessionStorage.getItem('user'),
       newChannelName: '',
       requestState: '',
       showErrorBlock: false,
@@ -106,6 +103,7 @@ export default class App extends React.Component {
         socket.on('new message', (messages) => {
           const { selectedChannel } = this.state;
           const visibleMessages = messages[selectedChannel];
+          // console.log(visibleMessages);
           this.setState({ channelsMessages: messages, visibleMessages });
         });
         socket.on('new channel', (data) => {
@@ -128,11 +126,18 @@ export default class App extends React.Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { message, selectedChannel } = this.state;
+    const { message, selectedChannel, userName } = this.state;
+    const messageDate = new Date();
     // this.setState({ message: '' });
     // socket.emit('new message', { channelId: selectedChannel, message });
-    axios.post(`${baseUrl}/newMessage`, { channelId: selectedChannel, message })
-      .then((res) => {
+    // axios.post(`${baseUrl}/newMessage`, { channelId: selectedChannel, message })
+    axios.post(`${baseUrl}/newMessage`, {
+      channelId: selectedChannel,
+      message,
+      userName,
+      messageDate,
+    })
+      .then(() => {
         // console.log('here');
         // socket.emit('new channel', newChannelName);
         // console.log('here');
@@ -145,6 +150,7 @@ export default class App extends React.Component {
 
   handleSelectChannels = (id) => () => {
     const { channelsMessages } = this.state;
+    console.log(channelsMessages);
     const visibleMessages = channelsMessages[id];
     this.setState({ visibleMessages, selectedChannel: id });
   }
@@ -153,12 +159,12 @@ export default class App extends React.Component {
     axios.post(`${baseUrl}/deleteChannel`, {
       channelId: id,
     })
-    .then((res) => {
-      // const { channels } = this.state;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+      .then(() => {
+        // const { channels } = this.state;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     // socket.emit('delete channel', id);
   }
@@ -169,14 +175,14 @@ export default class App extends React.Component {
     axios.post(`${baseUrl}/addChannel`, {
       channelName: newChannelName,
     })
-      .then((res) => {
+      .then(() => {
         // console.log('here');
         // socket.emit('new channel', newChannelName);
         console.log('here');
         this.setState({ newChannelName: '', showModal: false });
       })
       .catch((error) => {
-        console.log(error);
+        throw error;
       });
 
     // socket.emit('new channel', newChannelName);
@@ -185,19 +191,21 @@ export default class App extends React.Component {
 
   handleAddUser = (e) => {
     e.preventDefault();
-    const { newUserName } = this.state;
-    axios.post(`${baseUrl}/addUser`, {
-      userName: newUserName,
-    })
-      .then((res) => {
+    const { userName } = this.state;
+    axios.post(`${baseUrl}/addUser`, { userName })
+      .then(() => {
         // console.log('here');
         // socket.emit('new channel', newChannelName);
-        console.log('heres');
-        this.setState({ newUserName: '', registered: true });
+        // console.log('heres');
+        this.setState({ registered: true });
+        sessionStorage.setItem('registered', true);
+        sessionStorage.setItem('user', userName);
       })
       .catch((error) => {
-        console.log(error);
+        throw error;
       });
+    // localStorage.setItem('user', 'Pavel');
+    // console.log(localStorage.user);
 
     // socket.emit('new channel', newChannelName);
     // this.setState({ newChannelName: '', showModal: false });
@@ -212,14 +220,20 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { visibleMessages, message, requestState, channels, selectedChannel, showModal, newChannelName, registered, newUserName } = this.state;
+    const {
+      visibleMessages, message, requestState, channels, selectedChannel, showModal,
+      newChannelName, registered, userName,
+    } = this.state;
+    // console.log(visibleMessages);
 
     if (!registered) {
       return (
-        <RegisterModal onFormChange={this.handleChange} onFormSubmit={this.handleAddUser} newUserName={newUserName} onHide={this.handleCloseModal} />
+        <RegisterModal onFormChange={this.handleChange}
+          onFormSubmit={this.handleAddUser} userName={userName}
+          onHide={this.handleCloseModal}
+        />
       );
     }
-
 
     if (requestState === 'processing') {
       return (
@@ -236,42 +250,24 @@ export default class App extends React.Component {
               <Row>
                 <Col xs={10} md={3}>
                   <ListGroup variant="flush">
-                  {channels.map((channel) =>
-                    (<ListGroup.Item
-                     key={channel.id}
-                     style={{ wordWrap: 'break-word', textAlign: 'left' }}
-                     onClick={this.handleSelectChannels(channel.id)}
-                     className={ channel.id === selectedChannel ? 'active' : null}
-                     >
-                      {channel.name}</ListGroup.Item>))}
+                    <Channels channels={channels}
+                      selectedChannel={selectedChannel}
+                      selectChannel={this.handleSelectChannels}
+                    />
                     <ListGroup.Item><Button variant="primary" type="submit" block onClick={this.handleShowModal}>Add channel</Button></ListGroup.Item>
-                    <MyModal show={showModal} onFormChange={this.handleChange} onFormSubmit={this.handleAddChannel} newChannelName={newChannelName} onHide={this.handleCloseModal} />
+                    <MyModal show={showModal} onFormChange={this.handleChange}
+                     onFormSubmit={this.handleAddChannel} newChannelName={newChannelName}
+                     onHide={this.handleCloseModal}
+                    />
                   </ListGroup>
                 </Col>
                 <Col xs={2} md={1}>
-                  <ListGroup variant="flush">
-                  {channels.map((channel) =>
-                    (<ListGroup.Item
-                     key={channel.id}
-                     style={{ cursor: 'pointer' }}
-                     onClick={this.handleDeleteChannel(channel.id)}
-                     >X</ListGroup.Item>))}
-                  </ListGroup>
+                  <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} />
                 </Col>
                 <Col xs={12} md={8}>
-                  <ListGroup variant="flush">
-                  {visibleMessages.map((message) => (<ListGroup.Item key={_.uniqueId()} style={{ wordWrap: 'break-word', textAlign: 'right' }}>{message}</ListGroup.Item>))}
-                  </ListGroup>
-                  <Form onSubmit={this.handleSubmit}>
-                    <Form.Row>
-                      <Col lg={10} xs={12} style={{ marginBottom: '10px' }}>
-                        <Form.Control type="text" placeholder="Readonly input here..." name="message" onChange={this.handleChange} value={message} />
-                      </Col>
-                      <Col lg={2} xs={12}>
-                        <Button variant="primary" type="submit" block >Send</Button>
-                      </Col>
-                    </Form.Row>
-                  </Form>
+                  <Messages visibleMessages={visibleMessages} />
+                  <MessageForm message={message}
+                   submitMessage={this.handleSubmit} writeMessage={this.handleChange} />
                 </Col>
               </Row>
             </Container>
