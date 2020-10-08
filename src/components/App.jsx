@@ -39,13 +39,16 @@ export default class App extends React.Component {
       registered: sessionStorage.getItem('registered'),
       channels: [],
       channelsMessages: [],
-      users: [],
-      selectedUser: '',
+      // users: [],
+      // visibleUsers: [],
+      // selectedUser: '',
       visibleMessages: [],
       selectedChannel: '',
       message: '',
       showModal: false,
-      userName: sessionStorage.getItem('user'),
+      // userName: sessionStorage.getItem('user'),
+      userName: sessionStorage.getItem('userName') || '',
+      userId: sessionStorage.getItem('userId'),
       newChannelName: '',
       requestState: '',
       showErrorBlock: false,
@@ -95,11 +98,13 @@ export default class App extends React.Component {
     this.setState({ requestState: 'processing' }, async () => {
       try {
         const initCannels = await axios.get(`${baseUrl}/channels`);
-        const initUsers = await axios.get(`${baseUrl}/users`);
+        const initUsers = await axios.get(`${baseUrl}/users?userId=${this.state.userId}`);
+        // console.log(initUsers.data);
         const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
         this.setState({
           requestState: 'success',
-          users: initUsers.data,
+          users: initUsers.data.users,
+          visibleUsers: initUsers.data.users,
           channels: initCannels.data,
           channelsMessages: initMessages.data,
           selectedChannel: initCannels.data[0].id,
@@ -113,6 +118,17 @@ export default class App extends React.Component {
         socket.on('new channel', (data) => {
           this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
         });
+        socket.on('new user', (users) => {
+          // console.log(users);
+          // const { users, userId } = data;
+          // console.log('sock');
+          console.log(users);
+          // console.log(userId);
+          // if (userId !== this.state.userId) {
+          //   this.setState({ users: users.filter(user => +user.userId !== this.state.userId) });
+          // }
+          this.setState(users);
+        });
         socket.on('delete channel', (data) => {
           this.setState({ channels: data.channels });
         });
@@ -125,6 +141,7 @@ export default class App extends React.Component {
 
   handleChange = (e) => {
     const { name, value } = e.target;
+    console.log(value);
     this.setState({ [name]: value });
   }
 
@@ -154,7 +171,7 @@ export default class App extends React.Component {
 
   handleSelectChannels = (id) => () => {
     const { channelsMessages } = this.state;
-    console.log(channelsMessages);
+    // console.log(channelsMessages);
     const visibleMessages = channelsMessages[id];
     this.setState({ visibleMessages, selectedChannel: id });
   }
@@ -203,24 +220,26 @@ export default class App extends React.Component {
 
   handleAddUser = (e) => {
     e.preventDefault();
-    const { userName } = this.state;
+    const { userName, users } = this.state;
     axios.post(`${baseUrl}/addUser`, { userName })
-      .then(() => {
+      .then((resp) => {
         // console.log('here');
         // socket.emit('new channel', newChannelName);
-        // console.log('heres');
-        this.setState({ registered: true });
+        
+        const userId = resp.data;
+        console.log('resp');
+        console.log(userId);
+
+        this.setState({ registered: true, userId });
+        const visibleUsers = users.filter(user => +user.id !== userId);
+        this.setState({ visibleUsers });
         sessionStorage.setItem('registered', true);
-        sessionStorage.setItem('user', userName);
+        sessionStorage.setItem('userId', resp.data);
+        sessionStorage.setItem('userName', userName);
       })
       .catch((error) => {
         throw error;
       });
-    // localStorage.setItem('user', 'Pavel');
-    // console.log(localStorage.user);
-
-    // socket.emit('new channel', newChannelName);
-    // this.setState({ newChannelName: '', showModal: false });
   }
 
   handleCloseModal = () => {
@@ -234,14 +253,16 @@ export default class App extends React.Component {
   render() {
     const {
       visibleMessages, message, requestState, channels, selectedChannel, showModal,
-      newChannelName, registered, userName, users, selectedUser,
+      newChannelName, registered, userName, users, selectedUser, userId, visibleUsers,
     } = this.state;
-    // console.log(visibleMessages);
+
+    console.log(userName);
 
     if (!registered) {
       return (
         <RegisterModal onFormChange={this.handleChange}
-          onFormSubmit={this.handleAddUser} userName={userName}
+          onFormSubmit={this.handleAddUser}
+          userName={userName}
           onHide={this.handleCloseModal}
         />
       );
@@ -272,10 +293,11 @@ export default class App extends React.Component {
                      onHide={this.handleCloseModal}
                     />
                   </ListGroup>
-                  <Users users={users}
+                  <Users users={visibleUsers}
                       selectedUser={selectedUser}
                       selectUser={this.handleSelectUser}
                   />
+                  {/* {userName}{userId} */}
                 </Col>
                 <Col xs={2} md={1}>
                   <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} />

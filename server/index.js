@@ -68,7 +68,6 @@ io.on('connection', (socket) => {
 
   socket.on('add user', () => {
     socket.emit('user joined', { channels: commonChannels, channelsMessages });
-    // socket.broadcast.emit('user joined', { channels, channelsMessages });
   });
 
   // socket.on('new message', (data) => {
@@ -109,14 +108,24 @@ app.get('/', (req, res) => {
 });
 
 app.get('/channels', cors(), (req, res) => res.send(commonChannels));
-app.get('/users', cors(), (req, res) => res.send(users));
+app.get('/users', cors(), (req, res) => {
+
+  const { userId } = req.query;
+  if (userId !== null) {
+    const filteredUsers = users.filter((user) => user.id !== userId);
+    // console.log(users);
+    res.send({ users: filteredUsers });
+  } else {
+    res.send(users);
+  }
+});
 
 app.get('/channelsMessages', cors(), (req, res) => res.send(channelsMessages));
 
 app.post('/deleteChannel', cors(), urlencodedParser, (req, res) => {
   const { channelId } = req.body;
   commonChannels = commonChannels.filter((el) => el.id !== channelId);
-  console.log(commonChannels);
+  // console.log(commonChannels);
   delete channelsMessages[channelId];
   io.emit('delete channel', { channels: commonChannels, channelsMessages });
   res.sendStatus(200);
@@ -136,9 +145,12 @@ app.post('/addUser', cors(), urlencodedParser, (req, res) => {
   const userId = _.uniqueId();
   const { userName } = req.body;
   users.push({ id: userId, name: userName, channels: [channel1Id, channel2Id] });
-  console.log(users);
-  // io.emit('new channel', { channels, channelsMessages });
-  res.sendStatus(200);
+  // console.log(users);
+  // const filteredUsers = users.filter((user) => user.id !== userId);
+  // console.log(filteredUsers);
+  // console.log(userId);
+  res.send(userId);
+  io.emit('new user', users);
 });
 
 app.post('/newMessage', cors(), urlencodedParser, (req, res) => {

@@ -5,7 +5,7 @@ const MyModal = (props) => {
   const {
     show, onFormChange, onFormSubmit, onHide, newChannelName,
   } = props;
-  
+
   return (
   <Modal show={show} onHide={onHide} size="lg"
       aria-labelledby="contained-modal-title-vcenter"
