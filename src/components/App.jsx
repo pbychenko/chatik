@@ -48,7 +48,7 @@ export default class App extends React.Component {
       showModal: false,
       // userName: sessionStorage.getItem('user'),
       userName: sessionStorage.getItem('userName') || '',
-      userId: sessionStorage.getItem('userId'),
+      userId: sessionStorage.getItem('userId') || null,
       newChannelName: '',
       requestState: '',
       showErrorBlock: false,
@@ -118,11 +118,22 @@ export default class App extends React.Component {
         socket.on('new channel', (data) => {
           this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
         });
-        socket.on('new user', (users) => {
-          // console.log(users);
-          // const { users, userId } = data;
+        socket.on('new user', (data) => {
+          const { users, userId } = data;
           // console.log('sock');
-          console.log(users);
+          // console.log(this.state.userId);
+          this.setState({ users });
+          // if (this.state.userId !== null) {
+          if (this.state.userId === null) {
+            const visibleUsers = users.filter(user => +user.id !== userId);
+        // this.setState({ visibleUsers });
+            this.setState({ registered: true, userId, visibleUsers });
+            sessionStorage.setItem('registered', true);
+            sessionStorage.setItem('userId', userId);
+          } else {
+            const visibleUsers = users.filter(user => +user.id !== this.state.userId);
+            this.setState({ visibleUsers });
+          }
           // console.log(userId);
           // if (userId !== this.state.userId) {
           //   this.setState({ users: users.filter(user => +user.userId !== this.state.userId) });
@@ -141,7 +152,8 @@ export default class App extends React.Component {
 
   handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(value);
+    // console.log(value);
+    console.log(this.state.userId);
     this.setState({ [name]: value });
   }
 
@@ -226,15 +238,16 @@ export default class App extends React.Component {
         // console.log('here');
         // socket.emit('new channel', newChannelName);
         
-        const userId = resp.data;
-        console.log('resp');
-        console.log(userId);
+        // const userId = resp.data;
+        // console.log('resp');
+        // console.log(userId);
 
-        this.setState({ registered: true, userId });
-        const visibleUsers = users.filter(user => +user.id !== userId);
-        this.setState({ visibleUsers });
-        sessionStorage.setItem('registered', true);
-        sessionStorage.setItem('userId', resp.data);
+        // this.setState({ registered: true, userId });
+        // const visibleUsers = users.filter(user => +user.id !== userId);
+        // this.setState({ visibleUsers });
+        // sessionStorage.setItem('registered', true);
+        // sessionStorage.setItem('userId', resp.data);
+        
         sessionStorage.setItem('userName', userName);
       })
       .catch((error) => {

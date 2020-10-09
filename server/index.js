@@ -66,9 +66,9 @@ const users = [
 io.on('connection', (socket) => {
   console.log('user connected');
 
-  socket.on('add user', () => {
-    socket.emit('user joined', { channels: commonChannels, channelsMessages });
-  });
+  // socket.on('add user', () => {
+  //   socket.emit('user joined', { channels: commonChannels, channelsMessages });
+  // });
 
   // socket.on('new message', (data) => {
   //   const { channelId, message } = data;
@@ -149,8 +149,8 @@ app.post('/addUser', cors(), urlencodedParser, (req, res) => {
   // const filteredUsers = users.filter((user) => user.id !== userId);
   // console.log(filteredUsers);
   // console.log(userId);
-  res.send(userId);
-  io.emit('new user', users);
+  // res.send(userId);
+  io.emit('new user', { users, userId });
 });
 
 app.post('/newMessage', cors(), urlencodedParser, (req, res) => {
