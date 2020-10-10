@@ -6,7 +6,7 @@ const io = require('socket.io')(http);
 const cors = require('cors');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
-// const jsonParser = bodyParser.json();
+
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 // app.set('view engine', 'pug');
@@ -45,23 +45,6 @@ const users = [
     channels: [channel1Id, channel2Id],
   },
 ];
-
-// const state = {
-//   channels: [
-//     {
-//       id: channel1Id,
-//       name: 'general',
-//     },
-//     {
-//       id: channel2Id,
-//       name: 'test',
-//     },
-//   ],
-//   channelsMessages: {
-//     [channel1Id]: ['канал general'],
-//     [channel2Id]: ['канал test'],
-//   },
-// };
 
 io.on('connection', (socket) => {
   console.log('user connected');
@@ -150,7 +133,7 @@ app.post('/addUser', cors(), urlencodedParser, (req, res) => {
   // console.log(filteredUsers);
   // console.log(userId);
   // res.send(userId);
-  io.emit('new user', { users, userId });
+  io.emit('new user', { users, userId, userName });
 });
 
 app.post('/newMessage', cors(), urlencodedParser, (req, res) => {
