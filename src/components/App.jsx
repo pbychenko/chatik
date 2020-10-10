@@ -38,6 +38,7 @@ export default class App extends React.Component {
     this.state = {
       registered: sessionStorage.getItem('registered'),
       channels: [],
+      visibleChannels: [],
       channelsMessages: [],
       users: [],
       visibleUsers: [],
@@ -97,7 +98,8 @@ export default class App extends React.Component {
   componentDidMount() {
     this.setState({ requestState: 'processing' }, async () => {
       try {
-        const initCannels = await axios.get(`${baseUrl}/channels`);
+        // const initCannels = await axios.get(`${baseUrl}/channels`);
+        const initCannels = await axios.get(`${baseUrl}/channels?userId=${this.state.userId}`);
         const initUsers = await axios.get(`${baseUrl}/users?userId=${this.state.userId}`);
         const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
         this.setState({
@@ -105,6 +107,7 @@ export default class App extends React.Component {
           users: initUsers.data.users,
           visibleUsers: initUsers.data.users,
           channels: initCannels.data,
+          visibleChannels: initCannels.data,
           channelsMessages: initMessages.data,
           selectedChannel: initCannels.data[0].id,
           visibleMessages: initMessages.data[initCannels.data[0].id],
@@ -129,6 +132,27 @@ export default class App extends React.Component {
           const visibleUsers = users.filter((user) => user.id !== this.state.userId);
           this.setState({ visibleUsers });
         });
+        // socket.on('new user channel', (data) => {
+        //   const { channels, channelsMessages, currentUserId, newUserId } = data;
+        //   this.setState({ channels, channelsMessages });
+        //   // this.setState({ users });
+        //   // if (this.state.userId === null) {
+        //   //   this.setState({ registered: true, userId, userName });
+        //   //   sessionStorage.setItem('registered', true);
+        //   //   sessionStorage.setItem('userId', userId);
+        //   //   sessionStorage.setItem('userName', userName);
+        //   // }
+        //   // if (this.state.userId === currentUserId || this.state.userId === newUserId) {
+        //   //   const visibleUsers = users.filter((user) => user.id !== this.state.userId);
+        //   //   this.setState({ visibleUsers });
+        //   //   const currentUserChannels = this.state.users
+        //   //   const visibleChannels = 
+        //   //   this.s
+
+        //   // }
+        //   const visibleUsers = users.filter((user) => user.id !== newUserId);
+        //   this.setState({ visibleUsers });
+        // });
         socket.on('delete channel', (data) => {
           this.setState({ channels: data.channels });
         });
@@ -172,15 +196,16 @@ export default class App extends React.Component {
     const { channelsMessages } = this.state;
     // console.log(channelsMessages);
     const visibleMessages = channelsMessages[id];
-    this.setState({ visibleMessages, selectedChannel: id });
+    this.setState({ visibleMessages, selectedUser: '', selectedChannel: id });
+    // this.setState({ visibleMessages, selectedChannel: id });
   }
 
   handleSelectUser = (id) => () => {
-    // const { channelsMessages } = this.state;
-    // console.log(channelsMessages);
-    // const visibleMessages = channelsMessages[id];
+    // console.log(id);
+    // this.setState({ visibleMessages, selectedUser: '' });
     // this.setState({ visibleMessages, selectedChannel: id });
-    this.setState({ selectedUser: id });
+    // this.setState({ selectedUser: id });
+    this.setState({ selectedChannel: '', selectedUser: id });
   }
 
   handleDeleteChannel = (id) => () => {
@@ -219,10 +244,31 @@ export default class App extends React.Component {
 
   handleAddUser = (e) => {
     e.preventDefault();
-    const { userName, users } = this.state;
+    const { userName } = this.state;
     axios.post(`${baseUrl}/addUser`, { userName })
-      .then((resp) => {        
+      .then(() => {
         // sessionStorage.setItem('userName', userName);
+      })
+      .catch((error) => {
+        throw error;
+      });
+  }
+
+  handleCreateChannelWithUser = (id) => (e) => {
+    e.preventDefault();
+    const { userId } = this.state;
+    // console.log(userId);
+    // console.log(id);
+
+    axios.post(`${baseUrl}/addUserChannel`, {
+      currentUserId: userId,
+      newUserId: id,
+    })
+      .then(() => {
+      // console.log('here');
+      // socket.emit('new channel', newChannelName);
+      // console.log('here');
+      // this.setState({ newChannelName: '', showModal: false });
       })
       .catch((error) => {
         throw error;
@@ -240,10 +286,8 @@ export default class App extends React.Component {
   render() {
     const {
       visibleMessages, message, requestState, channels, selectedChannel, showModal,
-      newChannelName, registered, userName, users, selectedUser, userId, visibleUsers,
+      newChannelName, registered, userName, selectedUser, userId, visibleUsers,
     } = this.state;
-
-    console.log(userName);
 
     if (!registered) {
       return (
@@ -290,9 +334,23 @@ export default class App extends React.Component {
                   <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} />
                 </Col>
                 <Col xs={12} md={8}>
-                  <Messages visibleMessages={visibleMessages} />
+                  {(selectedChannel !== '')
+                    ? (
+                    <>
+                      <Messages visibleMessages={visibleMessages} />
+                      <MessageForm message={message}
+                      submitMessage={this.handleSubmit} writeMessage={this.handleChange} />
+                    </>
+                    ) : null
+                  }
+                  {(selectedUser !== '')
+                    ? (
+                      <Button variant="primary" type="submit" block onClick={this.handleCreateChannelWithUser(selectedUser)}>Create Channel with this user</Button>
+                    ) : null
+                  }
+                  {/* <Messages visibleMessages={visibleMessages} />
                   <MessageForm message={message}
-                   submitMessage={this.handleSubmit} writeMessage={this.handleChange} />
+                   submitMessage={this.handleSubmit} writeMessage={this.handleChange} /> */}
                 </Col>
               </Row>
             </Container>
