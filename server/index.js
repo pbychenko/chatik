@@ -100,7 +100,7 @@ app.get('/channels', cors(), (req, res) => res.send(commonChannels));
 //   //   console.log(currentUser);
 //   //   res.send(commonChannels);
 //     // const currentUserChannels = currentUser.channels;
-
+  
 //   //   const filteredChannels = commonChannels.filter((channel) => currentUserChannels.some(id => id === channel.id));
 //   //   // console.log(users);
 //   //   res.send({ channels: filteredChannels });
@@ -163,6 +163,8 @@ app.post('/addUserChannel', cors(), urlencodedParser, (req, res) => {
     channelsMessages,
     currentUserId,
     newUserId,
+    currentUserChannels: currentUser.channels,
+    otherUserChannels: otherUser.channels,
   });
   res.sendStatus(200);
 });

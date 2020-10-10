@@ -133,27 +133,25 @@ export default class App extends React.Component {
           this.setState({ visibleUsers });
         });
         socket.on('new user channel', (data) => {
-          const { channels, channelsMessages, currentUserId, newUserId } = data;
+          const { channels, channelsMessages, currentUserId, newUserId, currentUserChannels, otherUserChannels } = data;
           this.setState({ channels, channelsMessages });
           console.log(currentUserId);
           console.log(this.state.userId);
 
-          // this.setState({ users });
-          // if (this.state.userId === null) {
-          //   this.setState({ registered: true, userId, userName });
-          //   sessionStorage.setItem('registered', true);
-          //   sessionStorage.setItem('userId', userId);
-          //   sessionStorage.setItem('userName', userName);
+          // if (this.state.userId === currentUserId || this.state.userId === newUserId) {
+          //   const visibleUsers = this.state.visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
+          //   this.setState({ visibleUsers });
           // }
-          if (this.state.userId === currentUserId || this.state.userId === newUserId) {
-            const visibleUsers = this.state.users.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
-            this.setState({ visibleUsers });
-            // const currentUserChannels = this.state.users
-            // const visibleChannels = 
-            // this.s
+          if (this.state.userId === currentUserId) {
+            const visibleUsers = this.state.visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
+            const visibleChannels = channels.filter((channel) => currentUserChannels.some(id => id === channel.id));
+            this.setState({ visibleUsers, visibleChannels });
           }
-          // const visibleUsers = users.filter((user) => user.id !== newUserId);
-          // this.setState({ visibleUsers });
+          if (this.state.userId === newUserId) {
+            const visibleUsers = this.state.visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
+            const visibleChannels = channels.filter((channel) => otherUserChannels.some(id => id === channel.id));
+            this.setState({ visibleUsers, visibleChannels });
+          }
         });
         socket.on('delete channel', (data) => {
           this.setState({ channels: data.channels });
@@ -288,7 +286,7 @@ export default class App extends React.Component {
   render() {
     const {
       visibleMessages, message, requestState, channels, selectedChannel, showModal,
-      newChannelName, registered, userName, selectedUser, userId, visibleUsers,
+      newChannelName, registered, userName, selectedUser, userId, visibleUsers, visibleChannels,
     } = this.state;
 
     if (!registered) {
@@ -316,7 +314,7 @@ export default class App extends React.Component {
               <Row>
                 <Col xs={10} md={3}>
                   <ListGroup variant="flush">
-                    <Channels channels={channels}
+                    <Channels channels={visibleChannels}
                       selectedChannel={selectedChannel}
                       selectChannel={this.handleSelectChannels}
                     />
@@ -333,7 +331,7 @@ export default class App extends React.Component {
                   {/* {userName}{userId} */}
                 </Col>
                 <Col xs={2} md={1}>
-                  <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} />
+                  <DeleteChannels channels={visibleChannels} deleteChannel={this.handleDeleteChannel} />
                 </Col>
                 <Col xs={12} md={8}>
                   {(selectedChannel !== '')
