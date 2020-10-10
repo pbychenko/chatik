@@ -98,8 +98,8 @@ export default class App extends React.Component {
   componentDidMount() {
     this.setState({ requestState: 'processing' }, async () => {
       try {
-        // const initCannels = await axios.get(`${baseUrl}/channels`);
-        const initCannels = await axios.get(`${baseUrl}/channels?userId=${this.state.userId}`);
+        const initCannels = await axios.get(`${baseUrl}/channels`);
+        // const initCannels = await axios.get(`${baseUrl}/channels?userId=${this.state.userId}`);
         const initUsers = await axios.get(`${baseUrl}/users?userId=${this.state.userId}`);
         const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
         this.setState({
@@ -132,27 +132,29 @@ export default class App extends React.Component {
           const visibleUsers = users.filter((user) => user.id !== this.state.userId);
           this.setState({ visibleUsers });
         });
-        // socket.on('new user channel', (data) => {
-        //   const { channels, channelsMessages, currentUserId, newUserId } = data;
-        //   this.setState({ channels, channelsMessages });
-        //   // this.setState({ users });
-        //   // if (this.state.userId === null) {
-        //   //   this.setState({ registered: true, userId, userName });
-        //   //   sessionStorage.setItem('registered', true);
-        //   //   sessionStorage.setItem('userId', userId);
-        //   //   sessionStorage.setItem('userName', userName);
-        //   // }
-        //   // if (this.state.userId === currentUserId || this.state.userId === newUserId) {
-        //   //   const visibleUsers = users.filter((user) => user.id !== this.state.userId);
-        //   //   this.setState({ visibleUsers });
-        //   //   const currentUserChannels = this.state.users
-        //   //   const visibleChannels = 
-        //   //   this.s
+        socket.on('new user channel', (data) => {
+          const { channels, channelsMessages, currentUserId, newUserId } = data;
+          this.setState({ channels, channelsMessages });
+          console.log(currentUserId);
+          console.log(this.state.userId);
 
-        //   // }
-        //   const visibleUsers = users.filter((user) => user.id !== newUserId);
-        //   this.setState({ visibleUsers });
-        // });
+          // this.setState({ users });
+          // if (this.state.userId === null) {
+          //   this.setState({ registered: true, userId, userName });
+          //   sessionStorage.setItem('registered', true);
+          //   sessionStorage.setItem('userId', userId);
+          //   sessionStorage.setItem('userName', userName);
+          // }
+          if (this.state.userId === currentUserId || this.state.userId === newUserId) {
+            const visibleUsers = this.state.users.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
+            this.setState({ visibleUsers });
+            // const currentUserChannels = this.state.users
+            // const visibleChannels = 
+            // this.s
+          }
+          // const visibleUsers = users.filter((user) => user.id !== newUserId);
+          // this.setState({ visibleUsers });
+        });
         socket.on('delete channel', (data) => {
           this.setState({ channels: data.channels });
         });
