@@ -90,25 +90,24 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/channels', cors(), (req, res) => res.send(commonChannels));
+// app.get('/channels', cors(), (req, res) => res.send(commonChannels));
 
-// app.get('/channels', cors(), (req, res) => { // res.send(commonChannels));
-//   const { userId } = req.query;
-//   console.log(userId);
-//   // if (userId !== null) {
-//   //   const currentUser = _.find(users, { id: +userId });
-//   //   console.log(currentUser);
-//   //   res.send(commonChannels);
-//     // const currentUserChannels = currentUser.channels;
+app.get('/channels', cors(), (req, res) => { // res.send(commonChannels));
+  const { userId } = req.query;
+  console.log(typeof null);
+  if (userId !== 'null') {
+    const currentUser = _.find(users, { id: userId });
+    console.log(currentUser);
+    const currentUserChannels = currentUser.channels;
   
-//   //   const filteredChannels = commonChannels.filter((channel) => currentUserChannels.some(id => id === channel.id));
-//   //   // console.log(users);
-//   //   res.send({ channels: filteredChannels });
-//   // } else {
-//   //   res.send(commonChannels);
-//   // }
-//   res.send(commonChannels);
-// });
+    const filteredChannels = commonChannels.filter((channel) => currentUserChannels.some(id => id === channel.id));
+    console.log(users);
+    res.send({ channels: filteredChannels });
+    // res.send(commonChannels);
+  } else {
+    res.send(commonChannels);
+  }
+});
 
 app.get('/users', cors(), (req, res) => {
   const { userId } = req.query;

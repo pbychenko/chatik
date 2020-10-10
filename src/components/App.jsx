@@ -98,8 +98,8 @@ export default class App extends React.Component {
   componentDidMount() {
     this.setState({ requestState: 'processing' }, async () => {
       try {
-        const initCannels = await axios.get(`${baseUrl}/channels`);
-        // const initCannels = await axios.get(`${baseUrl}/channels?userId=${this.state.userId}`);
+        // const initCannels = await axios.get(`${baseUrl}/channels`);
+        const initCannels = await axios.get(`${baseUrl}/channels?userId=${this.state.userId}`);
         const initUsers = await axios.get(`${baseUrl}/users?userId=${this.state.userId}`);
         const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
         this.setState({
