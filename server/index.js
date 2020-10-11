@@ -28,6 +28,8 @@ let commonChannels = [
   },
 ];
 
+
+
 const channelsMessages = {
   [channel1Id]: [],
   [channel2Id]: [],
@@ -87,22 +89,25 @@ io.on('connection', (socket) => {
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(__dirname + '/index.html'); 
 });
 
 // app.get('/channels', cors(), (req, res) => res.send(commonChannels));
 
 app.get('/channels', cors(), (req, res) => { // res.send(commonChannels));
   const { userId } = req.query;
-  console.log(typeof null);
   if (userId !== 'null') {
     const currentUser = _.find(users, { id: userId });
-    console.log(currentUser);
+    // console.log(userId);
+    // console.log(currentUser);
     const currentUserChannels = currentUser.channels;
-  
+    console.log('channels');
+    console.log(currentUser);
+    console.log(commonChannels);
+    console.log(currentUserChannels);
     const filteredChannels = commonChannels.filter((channel) => currentUserChannels.some(id => id === channel.id));
-    console.log(users);
-    res.send({ channels: filteredChannels });
+    // console.log(filteredChannels);
+    res.send(filteredChannels);
     // res.send(commonChannels);
   } else {
     res.send(commonChannels);
@@ -127,25 +132,38 @@ app.post('/deleteChannel', cors(), urlencodedParser, (req, res) => {
   commonChannels = commonChannels.filter((el) => el.id !== channelId);
   // console.log(commonChannels);
   delete channelsMessages[channelId];
-  io.emit('delete channel', { channels: commonChannels, channelsMessages });
+  users.forEach((user) => {
+    // const newUserChannels = [...user.channels];
+    console.log(user.channels);
+    console.log(typeof channelId);
+    const newUserChannels = user.channels.filter(channel => channel !== channelId);
+    user.channels = newUserChannels;
+    console.log(user.channels);
+  });
+  io.emit('delete channel', { channels: commonChannels, channelsMessages, channelId });
   res.sendStatus(200);
 });
 
 app.post('/addChannel', cors(), urlencodedParser, (req, res) => {
   const channelId = _.uniqueId();
   const { channelName } = req.body;
-  commonChannels.push({ id: channelId, name: channelName });
-  channelsMessages[channelId] = [];
+  const newChannel = { id: channelId, name: channelName };
+  commonChannels.push(newChannel);
+  users.forEach((user) => {
+    user.channels.push(channelId);
+  });
+  console.log('add channel');
   console.log(commonChannels);
-  io.emit('new channel', { channels: commonChannels, channelsMessages });
+  channelsMessages[channelId] = [];
+  io.emit('new channel', { channels: commonChannels, channelsMessages, newChannel });
   res.sendStatus(200);
 });
 
 app.post('/addUserChannel', cors(), urlencodedParser, (req, res) => {
   const channelId = _.uniqueId();
   const { currentUserId, newUserId } = req.body;
-  console.log(currentUserId);
-  console.log(newUserId);
+  // console.log(currentUserId);
+  // console.log(newUserId);
   const currentUser = _.find(users, { id: currentUserId });
   const otherUser = _.find(users, { id: newUserId });
   console.log(currentUser);

@@ -100,6 +100,7 @@ export default class App extends React.Component {
       try {
         // const initCannels = await axios.get(`${baseUrl}/channels`);
         const initCannels = await axios.get(`${baseUrl}/channels?userId=${this.state.userId}`);
+        console.log(initCannels);
         const initUsers = await axios.get(`${baseUrl}/users?userId=${this.state.userId}`);
         const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
         this.setState({
@@ -109,8 +110,8 @@ export default class App extends React.Component {
           channels: initCannels.data,
           visibleChannels: initCannels.data,
           channelsMessages: initMessages.data,
-          selectedChannel: initCannels.data[0].id,
-          visibleMessages: initMessages.data[initCannels.data[0].id],
+          // selectedChannel: initCannels.data[0].id,
+          // visibleMessages: initMessages.data[initCannels.data[0].id],
         });
         socket.on('new message', (messages) => {
           const { selectedChannel } = this.state;
@@ -118,7 +119,12 @@ export default class App extends React.Component {
           this.setState({ channelsMessages: messages, visibleMessages });
         });
         socket.on('new channel', (data) => {
-          this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
+          const { channels, channelsMessages, newChannel } = data;
+          // console.log(data);
+          const { visibleChannels } = this.state;
+          visibleChannels.push(newChannel);
+          this.setState({ channels, channelsMessages, visibleChannels });
+          // this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
         });
         socket.on('new user', (data) => {
           const { users, userId, userName } = data;
@@ -135,13 +141,9 @@ export default class App extends React.Component {
         socket.on('new user channel', (data) => {
           const { channels, channelsMessages, currentUserId, newUserId, currentUserChannels, otherUserChannels } = data;
           this.setState({ channels, channelsMessages });
-          console.log(currentUserId);
-          console.log(this.state.userId);
+          // console.log(currentUserId);
+          // console.log(this.state.userId);
 
-          // if (this.state.userId === currentUserId || this.state.userId === newUserId) {
-          //   const visibleUsers = this.state.visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
-          //   this.setState({ visibleUsers });
-          // }
           if (this.state.userId === currentUserId) {
             const visibleUsers = this.state.visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
             const visibleChannels = channels.filter((channel) => currentUserChannels.some(id => id === channel.id));
@@ -154,7 +156,10 @@ export default class App extends React.Component {
           }
         });
         socket.on('delete channel', (data) => {
-          this.setState({ channels: data.channels });
+          const { channels, channelsMessages, channelId } = data;
+          const { visibleChannels } = this.state;
+          const newVisibleChannels = visibleChannels.filter((channel) => channel.id !== channelId);
+          this.setState({ channels, channelsMessages, visibleChannels: newVisibleChannels });
         });
       } catch (error) {
         this.setState({ requestState: 'failed' });
@@ -216,7 +221,7 @@ export default class App extends React.Component {
         // const { channels } = this.state;
       })
       .catch((error) => {
-        console.log(error);
+        throw error;
       });
 
     // socket.emit('delete channel', id);
@@ -229,9 +234,6 @@ export default class App extends React.Component {
       channelName: newChannelName,
     })
       .then(() => {
-        // console.log('here');
-        // socket.emit('new channel', newChannelName);
-        console.log('here');
         this.setState({ newChannelName: '', showModal: false });
       })
       .catch((error) => {
@@ -285,9 +287,11 @@ export default class App extends React.Component {
 
   render() {
     const {
-      visibleMessages, message, requestState, channels, selectedChannel, showModal,
-      newChannelName, registered, userName, selectedUser, userId, visibleUsers, visibleChannels,
+      visibleMessages, message, requestState, selectedChannel, showModal,
+      newChannelName, registered, userName, selectedUser, userId, channels, visibleUsers, visibleChannels,
     } = this.state;
+
+    // console.log(visibleChannels);
 
     if (!registered) {
       return (
