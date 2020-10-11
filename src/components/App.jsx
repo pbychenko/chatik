@@ -1,6 +1,6 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import openSocket from 'socket.io-client';
+import io from 'socket.io-client';
 import axios from 'axios';
 import {
   Spinner,
@@ -19,7 +19,7 @@ import Messages from './Messages.jsx';
 import MessageForm from './MessageForm.jsx';
 import Users from './Users.jsx';
 
-const socket = openSocket('http://localhost:8080');
+const socket = io('http://localhost:8080');
 const baseUrl = 'http://localhost:8080';
 const centerStyle = {
   display: 'flex',
@@ -305,7 +305,7 @@ export default class App extends React.Component {
   render() {
     const {
       visibleMessages, message, requestState, selectedChannel, showModal,
-      newChannelName, registered, userName, selectedUser, userId, channels, visibleUsers, visibleChannels,
+      newChannelName, registered, userName, selectedUser, userId, visibleUsers, visibleChannels,
     } = this.state;
 
     console.log(userId);

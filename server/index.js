@@ -28,8 +28,6 @@ let commonChannels = [
   },
 ];
 
-
-
 const channelsMessages = {
   [channel1Id]: [],
   [channel2Id]: [],
