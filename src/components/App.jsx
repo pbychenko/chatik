@@ -100,7 +100,7 @@ export default class App extends React.Component {
       try {
         // const initCannels = await axios.get(`${baseUrl}/channels`);
         const initCannels = await axios.get(`${baseUrl}/channels?userId=${this.state.userId}`);
-        console.log(initCannels);
+        // console.log(initCannels);
         const initUsers = await axios.get(`${baseUrl}/users?userId=${this.state.userId}`);
         const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
         this.setState({
@@ -127,16 +127,20 @@ export default class App extends React.Component {
           // this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
         });
         socket.on('new user', (data) => {
-          const { users, userId, userName } = data;
+          // const { users, userId } = data;
+          const { users } = data;
           this.setState({ users });
-          if (this.state.userId === null) {
-            this.setState({ registered: true, userId, userName });
-            sessionStorage.setItem('registered', true);
-            sessionStorage.setItem('userId', userId);
-            sessionStorage.setItem('userName', userName);
+          if (this.state.userId !== null) {
+            console.log('socket');
+            console.log(this.state.userId);
+            console.log(typeof this.state.userId);
+            console.log(users);
+
+            const visibleUsers = users.filter((user) => user.id !== this.state.userId);
+            this.setState({ visibleUsers });
           }
-          const visibleUsers = users.filter((user) => user.id !== this.state.userId);
-          this.setState({ visibleUsers });
+          // const visibleUsers = users.filter((user) => user.id !== this.state.userId);
+          // this.setState({ visibleUsers });
         });
         socket.on('new user channel', (data) => {
           const { channels, channelsMessages, currentUserId, newUserId, currentUserChannels, otherUserChannels } = data;
@@ -246,10 +250,23 @@ export default class App extends React.Component {
 
   handleAddUser = (e) => {
     e.preventDefault();
-    const { userName } = this.state;
+    const { users, userName } = this.state;
     axios.post(`${baseUrl}/addUser`, { userName })
-      .then(() => {
-        // sessionStorage.setItem('userName', userName);
+      .then((resp) => {
+        console.log('resp');
+        const userId = resp.data.toString();
+        console.log(userId);
+        console.log(users);
+        const visibleUsers = users.filter((user) => user.id !== userId);
+        this.setState({
+          registered: true,
+          userId,
+          userName,
+          visibleUsers,
+        });
+        sessionStorage.setItem('registered', true);
+        sessionStorage.setItem('userId', userId);
+        sessionStorage.setItem('userName', userName);
       })
       .catch((error) => {
         throw error;
@@ -291,7 +308,7 @@ export default class App extends React.Component {
       newChannelName, registered, userName, selectedUser, userId, channels, visibleUsers, visibleChannels,
     } = this.state;
 
-    // console.log(visibleChannels);
+    console.log(userId);
 
     if (!registered) {
       return (

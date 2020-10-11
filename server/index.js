@@ -89,7 +89,7 @@ io.on('connection', (socket) => {
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html'); 
+  res.sendFile(__dirname + '/index.html');  
 });
 
 // app.get('/channels', cors(), (req, res) => res.send(commonChannels));
@@ -103,7 +103,7 @@ app.get('/channels', cors(), (req, res) => { // res.send(commonChannels));
     const currentUserChannels = currentUser.channels;
     console.log('channels');
     console.log(currentUser);
-    console.log(commonChannels);
+    console.log(commonChannels);   
     console.log(currentUserChannels);
     const filteredChannels = commonChannels.filter((channel) => currentUserChannels.some(id => id === channel.id));
     // console.log(filteredChannels);
@@ -175,7 +175,7 @@ app.post('/addUserChannel', cors(), urlencodedParser, (req, res) => {
   console.log(users);
 
   // // console.log(commonChannels);
-  io.emit('new user channel', {
+  io.emit('new user channel', { 
     channels: commonChannels,
     channelsMessages,
     currentUserId,
@@ -195,7 +195,8 @@ app.post('/addUser', cors(), urlencodedParser, (req, res) => {
   // console.log(filteredUsers);
   // console.log(userId);
   // res.send(userId);
-  io.emit('new user', { users, userId, userName });
+  io.emit('new user', { users });
+  res.send(userId);
 });
 
 app.post('/newMessage', cors(), urlencodedParser, (req, res) => {
