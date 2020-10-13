@@ -1,9 +1,9 @@
 import React from 'react';
 import { Modal } from 'react-bootstrap';
 
-const MyModal = (props) => {
+const RegisterModal = (props) => {
   const {
-    onFormChange, onFormSubmit, newUserName: userName,
+    onFormChange, onFormSubmit, userName,
   } = props;
 
   return (
@@ -19,7 +19,7 @@ const MyModal = (props) => {
                 <div className="container col-sm-8">
                   <form onSubmit={onFormSubmit}>
                     <div className="form-group">
-                      <input type="text" className="form-control" name="userName" value = {userName } onChange={onFormChange} />
+                      <input type="text" className="form-control" name="userName" value={userName} onChange={onFormChange} />
                     </div>
                     <button type="submit" className="btn btn-primary btn-block" width="100%">Submit</button>
                   </form>
@@ -31,4 +31,4 @@ const MyModal = (props) => {
       </Modal>);
 };
 
-export default MyModal;
+export default RegisterModal;

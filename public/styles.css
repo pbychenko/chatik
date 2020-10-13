@@ -1,0 +1,22 @@
+#chat {
+  /* background-color: black; */
+  /* jumbotron */
+}
+
+.jumbotron {
+  background-color: #82B962 !important;
+}
+
+.list-group-item {
+  border-style: none !important;
+  border-radius: 10px;
+  /* margin: 0; */
+}
+
+.test {
+  margin: 0;
+}
+
+.active {
+  background-color: #A3A7AF   !important; 
+}
