@@ -10,6 +10,7 @@ import {
   Row,
   Col,
   Button,
+  Jumbotron,
 } from 'react-bootstrap';
 import MyModal from './MyModal.jsx';
 import RegisterModal from './RegisterModal.jsx';
@@ -331,15 +332,20 @@ export default class App extends React.Component {
     if (requestState === 'success') {
       return (
         <>
+          <Jumbotron>
+             <h1 align='center'>CHATIK</h1>
+          </Jumbotron>
           <Container>
               <Row>
-                <Col xs={10} md={3}>
+                <Col xs={10} md={4}>
                   <ListGroup variant="flush">
                     <Channels channels={visibleChannels}
                       selectedChannel={selectedChannel}
                       selectChannel={this.handleSelectChannels}
                     />
-                    <ListGroup.Item><Button variant="primary" type="submit" block onClick={this.handleShowModal}>Add channel</Button></ListGroup.Item>
+                    <ListGroup.Item>
+                      <Button variant="outline-info" type="submit" block onClick={this.handleShowModal}>Add channel</Button>
+                     </ListGroup.Item>
                     <MyModal show={showModal} onFormChange={this.handleChange}
                      onFormSubmit={this.handleAddChannel} newChannelName={newChannelName}
                      onHide={this.handleCloseModal}
@@ -354,7 +360,7 @@ export default class App extends React.Component {
                 <Col xs={2} md={1}>
                   <DeleteChannels channels={visibleChannels} deleteChannel={this.handleDeleteChannel} />
                 </Col>
-                <Col xs={12} md={8}>
+                <Col xs={12} md={7}>
                   {(selectedChannel !== '')
                     ? (
                     <>
