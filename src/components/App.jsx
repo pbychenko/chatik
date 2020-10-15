@@ -48,7 +48,6 @@ export default class App extends React.Component {
       selectedChannel: '',
       message: '',
       showModal: false,
-      // userName: sessionStorage.getItem('user'),
       userName: sessionStorage.getItem('userName') || '',
       userId: sessionStorage.getItem('userId') || null,
       newChannelName: '',
@@ -56,45 +55,6 @@ export default class App extends React.Component {
       showErrorBlock: false,
     };
   }
-
-  // componentDidMount() {
-  //   this.setState({ requestState: 'processing' }, async () => {
-  //     try {
-  //       // const initCannels = await axios.get(`${baseUrl}/channels`);
-  //       // const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
-  //       socket.emit('add user');
-  //       socket.on('user joined', (data) => {
-  //         const initCannels = data.channels;
-  //         const initMessages = data.channelsMessages;
-  //         this.setState({
-  //           requestState: 'success',
-  //           // channels: initCannels.data,
-  //           // channelsMessages: initMessages.data,
-  //           // selectedChannel: initCannels.data[0].id,
-  //           // visibleMessages: initMessages.data[initCannels.data[0].id],
-  //           channels: initCannels,
-  //           channelsMessages: initMessages,
-  //           selectedChannel: initCannels[0].id,
-  //           visibleMessages: initMessages[initCannels[0].id],
-  //         });
-  //       });
-  //       socket.on('new message', (messages) => {
-  //         const { selectedChannel } = this.state;
-  //         const visibleMessages = messages[selectedChannel];
-  //         this.setState({ channelsMessages: messages, visibleMessages });
-  //       });
-  //       socket.on('new channel', (data) => {
-  //         this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
-  //       });
-  //       socket.on('delete channel', (data) => {
-  //         this.setState({ channels: data.channels });
-  //       });
-  //     } catch (error) {
-  //       this.setState({ requestState: 'failed' });
-  //       throw error;
-  //     }
-  //   });
-  // }
 
   componentDidMount() {
     this.setState({ requestState: 'processing' }, async () => {
