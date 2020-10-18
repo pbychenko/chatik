@@ -1,9 +1,7 @@
 const router = require('express').Router();
 const _ = require('lodash');
 const { users } = require('../data');
-
-const channel1Id = _.uniqueId();
-const channel2Id = _.uniqueId();
+const { commonChannelsIds } = require('../data');
 
 const usersRouter = (io) => {
   router.get('/', (req, res) => {
@@ -18,19 +16,18 @@ const usersRouter = (io) => {
     } else {
       res.send(users);
     }
-    res.send(users);
   });
 
   router.post('/add', (req, res) => {
     const userId = _.uniqueId();
     const { userName } = req.body;
-    users.push({ id: userId, name: userName, channels: [channel1Id, channel2Id] }); ///?  какая то хуйня!!!
+    users.push({ id: userId, name: userName, channels: commonChannelsIds });
     // console.log(users);
     // const filteredUsers = users.filter((user) => user.id !== userId);
     // console.log(filteredUsers);
     // console.log(userId);
     // res.send(userId);
-    io.emit('new user', { users });
+    // io.emit('new user', { users });
     res.send(userId);
   });
 

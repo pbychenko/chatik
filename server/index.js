@@ -62,7 +62,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/users', users(router, io));
-// app.use('/channels', channels(router, io));
+app.use('/channels', channels(router, io));
 
 // app.get('/channels', cors(), (req, res) => { // res.send(commonChannels));
 //   const { userId } = req.query;

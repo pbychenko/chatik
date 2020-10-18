@@ -3,7 +3,9 @@ const _ = require('lodash');
 const channel1Id = _.uniqueId();
 const channel2Id = _.uniqueId();
 
-let commonChannels = [
+const commonChannelsIds = [channel1Id, channel2Id];
+
+const channels = [
   {
     id: channel1Id,
     name: 'general',
@@ -18,20 +20,21 @@ const users = [
   {
     id: _.uniqueId(),
     name: 'Tuktuk',
-    channels: [channel1Id, channel2Id],
+    channels: commonChannelsIds,
   },
   {
     id: _.uniqueId(),
     name: 'Bumbum',
-    channels: [channel1Id, channel2Id],
+    channels: commonChannelsIds,
   },
 ];
 
 const channelsMessages = {
-  [channel1Id]: [],
-  [channel2Id]: [],
+  [commonChannelsIds[0]]: [],
+  [commonChannelsIds[1]]: [],
 };
 
-exports.commonChannels = commonChannels;
+exports.channels = channels;
+exports.commonChannelsIds = commonChannelsIds;
 exports.users = users;
 exports.channelsMessages = channelsMessages;

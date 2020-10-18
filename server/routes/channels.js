@@ -1,13 +1,16 @@
 const _ = require('lodash');
-let commonChannels = require('../data');
-const users = require('../data');
-const channelsMessages = require('../data');
+let { channels } = require('../data');
+const { users } = require('../data');
+const { channelsMessages } = require('../data');
 
 const channelsRouter = (router, io) => {
-  router.get('/', (req, res) => { // res.send(commonChannels));
-    const { userId } = req.query;
+  router.get('/', (req, res) => res.send(channels));
+
+  router.get('/:userId', (req, res) => { // res.send(commonChannels));
+    const { userId } = req.params;
     if (userId !== 'null') {
       const currentUser = _.find(users, { id: userId });
+      console.log(currentUser)
       // console.log(userId);
       // console.log(currentUser);
       const currentUserChannels = currentUser.channels;
@@ -15,12 +18,12 @@ const channelsRouter = (router, io) => {
       // console.log(currentUser);
       // console.log(commonChannels);
       // console.log(currentUserChannels);
-      const filteredChannels = commonChannels.filter((channel) => currentUserChannels.some((id) => id === channel.id));
+      const filteredChannels = channels.filter((channel) => currentUserChannels.some((id) => id === channel.id));
       // console.log(filteredChannels);
       res.send(filteredChannels);
       // res.send(commonChannels);
     } else {
-      res.send(commonChannels);
+      res.send(channels);
     }
   });
 
@@ -28,14 +31,14 @@ const channelsRouter = (router, io) => {
     const channelId = _.uniqueId();
     const { channelName } = req.body;
     const newChannel = { id: channelId, name: channelName };
-    commonChannels.push(newChannel);
+    channels.push(newChannel);
     users.forEach((user) => {
       user.channels.push(channelId);
     });
     console.log('add channel');
-    console.log(commonChannels);
+    console.log(channels);
     channelsMessages[channelId] = [];
-    io.emit('new channel', { channels: commonChannels, channelsMessages, newChannel });
+    // io.emit('new channel', { channels: channels, channelsMessages, newChannel });
     res.sendStatus(200);
   });
 
@@ -48,28 +51,28 @@ const channelsRouter = (router, io) => {
     const otherUser = _.find(users, { id: newUserId });
     console.log(currentUser);
 
-    commonChannels.push({ id: channelId, name: `${currentUserId}/${newUserId}` });
+    channels.push({ id: channelId, name: `${currentUserId}/${newUserId}` });
     channelsMessages[channelId] = [];
     currentUser.channels.push(channelId);
     otherUser.channels.push(channelId);
     console.log(users);
 
     // // console.log(commonChannels);
-    io.emit('new user channel', {
-      channels: commonChannels,
-      channelsMessages,
-      currentUserId,
-      newUserId,
-      currentUserChannels: currentUser.channels,
-      otherUserChannels: otherUser.channels,
-    });
+    // io.emit('new user channel', {
+    //   channels: channels,
+    //   channelsMessages,
+    //   currentUserId,
+    //   newUserId,
+    //   currentUserChannels: currentUser.channels,
+    //   otherUserChannels: otherUser.channels,
+    // });
     res.sendStatus(200);
   });
 
   //заменить на delete
   router.post('/delete', (req, res) => {
     const { channelId } = req.body;
-    commonChannels = commonChannels.filter((el) => el.id !== channelId);
+    channels = channels.filter((el) => el.id !== channelId);
     // console.log(commonChannels);
     delete channelsMessages[channelId];
     users.forEach((user) => {
@@ -80,7 +83,7 @@ const channelsRouter = (router, io) => {
       user.channels = newUserChannels;
       console.log(user.channels);
     });
-    io.emit('delete channel', { channels: commonChannels, channelsMessages, channelId });
+    // io.emit('delete channel', { channels: channels, channelsMessages, channelId });
     res.sendStatus(200);
   });
 
@@ -100,6 +103,8 @@ const channelsRouter = (router, io) => {
     // socket.broadcast.emit('new message', channelsMessages);
     res.sendStatus(200);
   });
+
+  return router;
 };
 
 module.exports = channelsRouter;
