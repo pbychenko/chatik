@@ -20,8 +20,9 @@ import Messages from './Messages.jsx';
 import MessageForm from './MessageForm.jsx';
 import Users from './Users.jsx';
 
-const socket = io('http://localhost:8080');
 const baseUrl = 'http://localhost:8080';
+const socket = io(baseUrl);
+
 const centerStyle = {
   display: 'flex',
   justifyContent: 'center',
@@ -39,7 +40,7 @@ export default class App extends React.Component {
     this.state = {
       registered: sessionStorage.getItem('registered'),
       channels: [],
-      visibleChannels: [],
+      // visibleChannels: [],
       channelsMessages: [],
       users: [],
       visibleUsers: [],
@@ -60,17 +61,18 @@ export default class App extends React.Component {
     this.setState({ requestState: 'processing' }, async () => {
       try {
         // const initCannels = await axios.get(`${baseUrl}/channels`);
-        const initCannels = await axios.get(`${baseUrl}/channels?userId=${this.state.userId}`);
-        // console.log(initCannels);
-        const initUsers = await axios.get(`${baseUrl}/users?userId=${this.state.userId}`);
-        const initMessages = await axios.get(`${baseUrl}/channelsMessages`);
+        const initCannels = await axios.get(`${baseUrl}/channels/${this.state.userId}`);
+        console.log(initCannels.data);
+        const initUsers = await axios.get(`${baseUrl}/users/${this.state.userId}`);
+        console.log(initUsers.data);
+        const initMessages = await axios.get(`${baseUrl}/channels/messages`);
+        console.log(initMessages.data);
         this.setState({
           requestState: 'success',
           users: initUsers.data.users,
           visibleUsers: initUsers.data.users,
           channels: initCannels.data,
-          visibleChannels: initCannels.data,
-          channelsMessages: initMessages.data,
+          messages: initMessages.data,
           // selectedChannel: initCannels.data[0].id,
           // visibleMessages: initMessages.data[initCannels.data[0].id],
         });
@@ -80,12 +82,16 @@ export default class App extends React.Component {
           this.setState({ channelsMessages: messages, visibleMessages });
         });
         socket.on('new channel', (data) => {
-          const { channels, channelsMessages, newChannel } = data;
-          // console.log(data);
-          const { visibleChannels } = this.state;
-          visibleChannels.push(newChannel);
-          this.setState({ channels, channelsMessages, visibleChannels });
-          // this.setState({ channels: data.channels, channelsMessages: data.channelsMessages });
+          // const { channels, channelsMessages, newChannel } = data;
+          // // console.log(data);
+          // const { visibleChannels } = this.state;
+          // visibleChannels.push(newChannel);
+          // this.setState({ channels, channelsMessages, visibleChannels });
+
+          const { channels } = this.state;
+          const { newChannel } = data;
+          channels.push(newChannel);
+          this.setState({ channels });
         });
         socket.on('new user', (data) => {
           // const { users, userId } = data;
@@ -104,27 +110,35 @@ export default class App extends React.Component {
           // this.setState({ visibleUsers });
         });
         socket.on('new user channel', (data) => {
-          const { channels, channelsMessages, currentUserId, newUserId, currentUserChannels, otherUserChannels } = data;
-          this.setState({ channels, channelsMessages });
-          // console.log(currentUserId);
-          // console.log(this.state.userId);
+          // const { channels, channelsMessages, currentUserId, newUserId, currentUserChannels, otherUserChannels } = data;
+          // this.setState({ channels, channelsMessages });
 
-          if (this.state.userId === currentUserId) {
-            const visibleUsers = this.state.visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
-            const visibleChannels = channels.filter((channel) => currentUserChannels.some(id => id === channel.id));
-            this.setState({ visibleUsers, visibleChannels });
-          }
-          if (this.state.userId === newUserId) {
-            const visibleUsers = this.state.visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
-            const visibleChannels = channels.filter((channel) => otherUserChannels.some(id => id === channel.id));
-            this.setState({ visibleUsers, visibleChannels });
+          // if (this.state.userId === currentUserId) {
+          //   const visibleUsers = this.state.visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
+          //   const visibleChannels = channels.filter((channel) => currentUserChannels.some(id => id === channel.id));
+          //   this.setState({ visibleUsers, visibleChannels });
+          // }
+          // if (this.state.userId === newUserId) {
+          //   const visibleUsers = this.state.visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== newUserId));
+          //   const visibleChannels = channels.filter((channel) => otherUserChannels.some(id => id === channel.id));
+          //   this.setState({ visibleUsers, visibleChannels });
+          // }
+
+          const { visibleUsers, channels, messages } = this.state;
+          const { currentUserId, otherUserId, newChannel } = data;
+          if (this.state.userId === currentUserId || this.state.userId === otherUserId) {
+            const newUsers = visibleUsers.filter((user) => (user.id !== currentUserId) && (user.id !== otherUserId));
+            channels.push(newChannel);
+            messages[newChannel.id] = [];
+            this.setState({ visibleUsers: newUsers, channels, messages });
           }
         });
         socket.on('delete channel', (data) => {
-          const { channels, channelsMessages, channelId } = data;
-          const { visibleChannels } = this.state;
-          const newVisibleChannels = visibleChannels.filter((channel) => channel.id !== channelId);
-          this.setState({ channels, channelsMessages, visibleChannels: newVisibleChannels });
+          const { channels, messages } = this.state;
+          const { channelId } = data;
+          const newChannels = channels.filter((channel) => channel.id !== channelId);
+          delete messages[channelId];
+          this.setState({ channels: newChannels, messages });
         });
       } catch (error) {
         this.setState({ requestState: 'failed' });
@@ -162,24 +176,19 @@ export default class App extends React.Component {
       });
   }
 
-  handleSelectChannels = (id) => () => {
+  handleSelectChannel = (id) => () => {
     const { channelsMessages } = this.state;
     // console.log(channelsMessages);
     const visibleMessages = channelsMessages[id];
     this.setState({ visibleMessages, selectedUser: '', selectedChannel: id });
-    // this.setState({ visibleMessages, selectedChannel: id });
   }
 
   handleSelectUser = (id) => () => {
-    // console.log(id);
-    // this.setState({ visibleMessages, selectedUser: '' });
-    // this.setState({ visibleMessages, selectedChannel: id });
-    // this.setState({ selectedUser: id });
     this.setState({ selectedChannel: '', selectedUser: id });
   }
 
   handleDeleteChannel = (id) => () => {
-    axios.post(`${baseUrl}/deleteChannel`, {
+    axios.delete(`${baseUrl}/channels/${id}`, {
       channelId: id,
     })
       .then(() => {
@@ -195,7 +204,7 @@ export default class App extends React.Component {
   handleAddChannel = (e) => {
     e.preventDefault();
     const { newChannelName } = this.state;
-    axios.post(`${baseUrl}/addChannel`, {
+    axios.post(`${baseUrl}/channels/add`, {
       channelName: newChannelName,
     })
       .then(() => {
@@ -212,7 +221,7 @@ export default class App extends React.Component {
   handleAddUser = (e) => {
     e.preventDefault();
     const { users, userName } = this.state;
-    axios.post(`${baseUrl}/addUser`, { userName })
+    axios.post(`${baseUrl}/users/add`, { userName })
       .then((resp) => {
         console.log('resp');
         const userId = resp.data.toString();
@@ -237,12 +246,10 @@ export default class App extends React.Component {
   handleCreateChannelWithUser = (id) => (e) => {
     e.preventDefault();
     const { userId } = this.state;
-    // console.log(userId);
-    // console.log(id);
 
-    axios.post(`${baseUrl}/addUserChannel`, {
+    axios.post(`${baseUrl}/channels/addPrivate`, {
       currentUserId: userId,
-      newUserId: id,
+      otherUserId: id,
     })
       .then(() => {
       // console.log('here');
@@ -266,7 +273,7 @@ export default class App extends React.Component {
   render() {
     const {
       visibleMessages, message, requestState, selectedChannel, showModal,
-      newChannelName, registered, userName, selectedUser, userId, visibleUsers, visibleChannels,
+      newChannelName, registered, userName, selectedUser, userId, visibleUsers, channels,
     } = this.state;
 
     console.log(userId);
@@ -299,9 +306,9 @@ export default class App extends React.Component {
               <Row>
                 <Col xs={10} md={4}>
                   <ListGroup variant="flush">
-                    <Channels channels={visibleChannels}
+                    <Channels channels={channels}
                       selectedChannel={selectedChannel}
-                      selectChannel={this.handleSelectChannels}
+                      selectChannel={this.handleSelectChannel}
                     />
                     <ListGroup.Item>
                       <Button variant="outline-info" type="submit" block onClick={this.handleShowModal}>Add channel</Button>
@@ -318,15 +325,15 @@ export default class App extends React.Component {
                   {/* {userName}{userId} */}
                 </Col>
                 <Col xs={2} md={1}>
-                  <DeleteChannels channels={visibleChannels} deleteChannel={this.handleDeleteChannel} />
+                  <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} />
                 </Col>
                 <Col xs={12} md={7}>
                   {(selectedChannel !== '')
                     ? (
                     <>
-                      <Messages visibleMessages={visibleMessages} />
+                      {/* <Messages visibleMessages={visibleMessages} />
                       <MessageForm message={message}
-                      submitMessage={this.handleSubmit} writeMessage={this.handleChange} />
+                      submitMessage={this.handleSubmit} writeMessage={this.handleChange} /> */}
                     </>
                     ) : null
                   }

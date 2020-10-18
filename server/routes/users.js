@@ -4,9 +4,9 @@ const { users } = require('../data');
 const { commonChannelsIds } = require('../data');
 
 const usersRouter = (io) => {
-  router.get('/', (req, res) => {
-    res.send(users);
-  });
+  // router.get('/', (req, res) => {
+  //   res.send(users);
+  // });
 
   router.get('/:userId', (req, res) => {
     const { userId } = req.params;
@@ -21,13 +21,8 @@ const usersRouter = (io) => {
   router.post('/add', (req, res) => {
     const userId = _.uniqueId();
     const { userName } = req.body;
-    users.push({ id: userId, name: userName, channels: commonChannelsIds });
-    // console.log(users);
-    // const filteredUsers = users.filter((user) => user.id !== userId);
-    // console.log(filteredUsers);
-    // console.log(userId);
-    // res.send(userId);
-    // io.emit('new user', { users });
+    users.push({ id: userId, name: userName, channels: [...commonChannelsIds] });
+    io.emit('new user', { users });
     res.send(userId);
   });
 

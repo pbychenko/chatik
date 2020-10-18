@@ -3,19 +3,19 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 // const path = require('path');
-const router = require('express').Router();
+// const router = require('express').Router();
 const cors = require('cors');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
 const users = require('./routes/users');
 const channels = require('./routes/channels');
 
-const urlencodedParser = bodyParser.urlencoded({ extended: false });
+// const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 // app.set('view engine', 'pug');
 app.use(cors());
-app.use('/assets', express.static(__dirname + '/dist/public'));
-app.use(express.json());
+app.use('/assets', express.static(__dirname + '/dist/public')); 
+app.use(bodyParser.json());
 const port = '8080';
 // const channel1Id = _.uniqueId();
 // const channel2Id = _.uniqueId();
@@ -58,11 +58,11 @@ io.on('connection', (socket) => {
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(__dirname + '/index.html');  
 });
 
-app.use('/users', users(router, io));
-app.use('/channels', channels(router, io));
+app.use('/users', users(io));
+app.use('/channels', channels(io));
 
 // app.get('/channels', cors(), (req, res) => { // res.send(commonChannels));
 //   const { userId } = req.query;

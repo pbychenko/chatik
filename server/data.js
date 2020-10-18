@@ -20,21 +20,21 @@ const users = [
   {
     id: _.uniqueId(),
     name: 'Tuktuk',
-    channels: commonChannelsIds,
+    channels: [...commonChannelsIds],
   },
   {
     id: _.uniqueId(),
     name: 'Bumbum',
-    channels: commonChannelsIds,
+    channels: [...commonChannelsIds],
   },
 ];
 
-const channelsMessages = {
-  [commonChannelsIds[0]]: [],
+const messages = {
+  [commonChannelsIds[0]]: ['rww', 'rwrwa'],
   [commonChannelsIds[1]]: [],
 };
 
 exports.channels = channels;
 exports.commonChannelsIds = commonChannelsIds;
 exports.users = users;
-exports.channelsMessages = channelsMessages;
+exports.messages = messages;

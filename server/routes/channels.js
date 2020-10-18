@@ -1,94 +1,102 @@
+const router = require('express').Router();
 const _ = require('lodash');
 let { channels } = require('../data');
 const { users } = require('../data');
-const { channelsMessages } = require('../data');
+const { messages } = require('../data');
+const { getUserChannels } = require('../utils');
+let { commonChannelsIds } = require('../data');
 
-const channelsRouter = (router, io) => {
-  router.get('/', (req, res) => res.send(channels));
+const channelsRouter = (io) => {
+  // router.get('/', (req, res) => res.send(channels));
+
+  router.get('/messages', (req, res) => {
+    res.send(messages);
+  });
 
   router.get('/:userId', (req, res) => { // res.send(commonChannels));
     const { userId } = req.params;
+    console.log(userId);
+    console.log(typeof userId);
+
     if (userId !== 'null') {
       const currentUser = _.find(users, { id: userId });
-      console.log(currentUser)
-      // console.log(userId);
-      // console.log(currentUser);
-      const currentUserChannels = currentUser.channels;
-      // console.log('channels');
-      // console.log(currentUser);
-      // console.log(commonChannels);
-      // console.log(currentUserChannels);
-      const filteredChannels = channels.filter((channel) => currentUserChannels.some((id) => id === channel.id));
-      // console.log(filteredChannels);
-      res.send(filteredChannels);
-      // res.send(commonChannels);
+      // const currentUserChannels = currentUser.channels;
+      // const filteredChannels = channels.filter((channel) => currentUserChannels.some((id) => id === channel.id));
+      const userChannels = getUserChannels(currentUser, channels);
+      res.send(userChannels);
     } else {
       res.send(channels);
     }
   });
+  
+
+  //тут надо подумать!!
+  // router.get('/:channelId/messages', (req, res) => { // res.send(commonChannels));
+  //   const { userId } = req.params;
+
+  //   if (userId !== 'null') {
+  //     const currentUser = _.find(users, { id: userId });
+  //     const currentUserChannels = currentUser.channels;
+  //     // const currentUserChannelsMessages
+  //     res.send(filteredChannels);
+  //   } else {
+  //     res.send(null);
+  //   }
+  // });
 
   router.post('/add', (req, res) => {
     const channelId = _.uniqueId();
     const { channelName } = req.body;
     const newChannel = { id: channelId, name: channelName };
     channels.push(newChannel);
+    commonChannelsIds.push(channelId);
     users.forEach((user) => {
       user.channels.push(channelId);
     });
-    console.log('add channel');
-    console.log(channels);
-    channelsMessages[channelId] = [];
+    messages[channelId] = [];
     // io.emit('new channel', { channels: channels, channelsMessages, newChannel });
+    io.emit('new channel', { newChannel });
     res.sendStatus(200);
   });
 
-  router.post('/addUserChannel', (req, res) => {
+  router.post('/addPrivate', (req, res) => {
     const channelId = _.uniqueId();
-    const { currentUserId, newUserId } = req.body;
-    // console.log(currentUserId);
-    // console.log(newUserId);
+    const { currentUserId, otherUserId } = req.body;
     const currentUser = _.find(users, { id: currentUserId });
-    const otherUser = _.find(users, { id: newUserId });
-    console.log(currentUser);
-
-    channels.push({ id: channelId, name: `${currentUserId}/${newUserId}` });
-    channelsMessages[channelId] = [];
+    const otherUser = _.find(users, { id: otherUserId });
+    const newChannel = { id: channelId, name: `${currentUserId}/${otherUserId}` };
+    channels.push(newChannel);
+    messages[channelId] = [];
     currentUser.channels.push(channelId);
     otherUser.channels.push(channelId);
-    console.log(users);
-
-    // // console.log(commonChannels);
-    // io.emit('new user channel', {
-    //   channels: channels,
-    //   channelsMessages,
-    //   currentUserId,
-    //   newUserId,
-    //   currentUserChannels: currentUser.channels,
-    //   otherUserChannels: otherUser.channels,
-    // });
+    io.emit('new user channel', {
+      // channels: channels,
+      // channelsMessages,
+      currentUserId,
+      otherUserId,
+      newChannel,
+      // currentUserChannels: currentUser.channels,
+      // otherUserChannels: otherUser.channels,
+    });
     res.sendStatus(200);
   });
 
-  //заменить на delete
-  router.post('/delete', (req, res) => {
-    const { channelId } = req.body;
+  router.delete('/:channelId', (req, res) => {
+    const { channelId } = req.params;
     channels = channels.filter((el) => el.id !== channelId);
-    // console.log(commonChannels);
-    delete channelsMessages[channelId];
+    commonChannelsIds = commonChannelsIds.filter((el) => el !== channelId);
+    // console.log(commonChannelsIds);
+    delete messages[channelId];
     users.forEach((user) => {
-      // const newUserChannels = [...user.channels];
-      console.log(user.channels);
-      console.log(typeof channelId);
       const newUserChannels = user.channels.filter((channel) => channel !== channelId);
       user.channels = newUserChannels;
-      console.log(user.channels);
     });
     // io.emit('delete channel', { channels: channels, channelsMessages, channelId });
+    io.emit('delete channel', { channelId });
     res.sendStatus(200);
   });
 
-  //  позже заменить на специфичный канал
-  router.post('/message', (req, res) => {
+  router.post('/:channelId/message', (req, res) => {
     const {
       channelId,
       message,
@@ -96,11 +104,10 @@ const channelsRouter = (router, io) => {
       messageDate,
     } = req.body;
     const newMessage = { user: userName, text: message, date: messageDate };
-    channelsMessages[channelId].push(newMessage);
-    console.log(channelsMessages);
+    messages[channelId].push(newMessage);
+    console.log(messages);
 
-    io.emit('new message', channelsMessages);
-    // socket.broadcast.emit('new message', channelsMessages);
+    // io.emit('new message', channelsMessages);
     res.sendStatus(200);
   });
 
