@@ -15,8 +15,8 @@ const channelsRouter = (io) => {
 
   router.get('/:userId', (req, res) => { // res.send(commonChannels));
     const { userId } = req.params;
-    console.log(userId);
-    console.log(typeof userId);
+    // console.log(userId);
+    // console.log(typeof userId);
 
     if (userId !== 'null') {
       const currentUser = _.find(users, { id: userId });
@@ -54,7 +54,6 @@ const channelsRouter = (io) => {
       user.channels.push(channelId);
     });
     messages[channelId] = [];
-    // io.emit('new channel', { channels: channels, channelsMessages, newChannel });
     io.emit('new channel', { newChannel });
     res.sendStatus(200);
   });
@@ -70,13 +69,9 @@ const channelsRouter = (io) => {
     currentUser.channels.push(channelId);
     otherUser.channels.push(channelId);
     io.emit('new user channel', {
-      // channels: channels,
-      // channelsMessages,
       currentUserId,
       otherUserId,
       newChannel,
-      // currentUserChannels: currentUser.channels,
-      // otherUserChannels: otherUser.channels,
     });
     res.sendStatus(200);
   });
@@ -96,7 +91,7 @@ const channelsRouter = (io) => {
     res.sendStatus(200);
   });
 
-  router.post('/:channelId/message', (req, res) => {
+  router.post('/message', (req, res) => {
     const {
       channelId,
       message,
@@ -107,7 +102,7 @@ const channelsRouter = (io) => {
     messages[channelId].push(newMessage);
     console.log(messages);
 
-    // io.emit('new message', channelsMessages);
+    io.emit('new message', { channelId, newMessage });
     res.sendStatus(200);
   });
 
