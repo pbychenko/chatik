@@ -10,15 +10,15 @@ const Users = (props) => {
   return (
       <ListGroup variant="flush">
         Users Online
-        {users.map((user) =>
-          (<ListGroup.Item
-            key={user.id}
-            style={{ wordWrap: 'break-word', textAlign: 'left' }}
-            onClick={selectUser(user.id)}
-            className={ user.id === selectedUser ? 'active' : null}
-            >
-            {user.name}</ListGroup.Item>))}
-      </ListGroup>);
+        {users.map((user) => (
+          <ListGroup.Item
+              key={user.id}
+              style={{ wordWrap: 'break-word', textAlign: 'left' }}
+              onClick={selectUser(user.id)}
+              className={ user.id === selectedUser ? 'active' : null}
+              >
+              {user.name}</ListGroup.Item>))}
+          </ListGroup>);
 };
 
 export default Users;

@@ -15,8 +15,6 @@ const channelsRouter = (io) => {
 
   router.get('/:userId', (req, res) => { // res.send(commonChannels));
     const { userId } = req.params;
-    // console.log(userId);
-    // console.log(typeof userId);
 
     if (userId !== 'null') {
       const currentUser = _.find(users, { id: userId });
@@ -86,7 +84,6 @@ const channelsRouter = (io) => {
       const newUserChannels = user.channels.filter((channel) => channel !== channelId);
       user.channels = newUserChannels;
     });
-    // io.emit('delete channel', { channels: channels, channelsMessages, channelId });
     io.emit('delete channel', { channelId });
     res.sendStatus(200);
   });

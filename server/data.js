@@ -30,7 +30,7 @@ const users = [
 ];
 
 const messages = {
-  [commonChannelsIds[0]]: ['rww', 'rwrwa'],
+  [commonChannelsIds[0]]: [],
   [commonChannelsIds[1]]: [],
 };
 

@@ -1,6 +1,7 @@
 const getUserChannels = (user, channels) => {
   const userChannelsIds = user.channels;
-  const userChannels = channels.filter((channel) => userChannelsIds.some((id) => id === channel.id));
+  const userChannels = channels
+    .filter((channel) => userChannelsIds.some((id) => id === channel.id));
   return userChannels;
 };
 
