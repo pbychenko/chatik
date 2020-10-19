@@ -1,6 +1,7 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import io from 'socket.io-client';
+import _ from 'lodash';
 import axios from 'axios';
 import {
   Spinner,
@@ -40,7 +41,6 @@ export default class App extends React.Component {
     this.state = {
       registered: sessionStorage.getItem('registered'),
       channels: [],
-      // visibleChannels: [],
       channelsMessages: [],
       users: [],
       visibleUsers: [],
@@ -64,7 +64,7 @@ export default class App extends React.Component {
         console.log(initCannels.data);
         const initUsers = await axios.get(`${baseUrl}/users/${this.state.userId}`);
         console.log(initUsers.data);
-        const initMessages = await axios.get(`${baseUrl}/channels/messages`);
+        const initMessages = await axios.get(`${baseUrl}/channels/${this.state.userId}/messages`);
         console.log(initMessages.data);
         this.setState({
           requestState: 'success',
@@ -72,16 +72,22 @@ export default class App extends React.Component {
           visibleUsers: initUsers.data.users,
           channels: initCannels.data,
           messages: initMessages.data,
-          // selectedChannel: initCannels.data[0].id,
-          // visibleMessages: initMessages.data[initCannels.data[0].id],
         });
         socket.on('new message', (data) => {
-          const { messages, selectedChannel } = this.state;
-          console.log(data);
+          const { messages, selectedChannel, channels } = this.state;
+          // console.log(data);
           const { channelId, newMessage } = data;
-          messages[channelId].push(newMessage);
-          const visibleMessages = messages[selectedChannel];
-          this.setState({ messages, visibleMessages });
+          // console.log(typeof channelId);
+          // console.log(channels);
+          // console.log(_.findIndex(channels, (o) => o.id === channelId));
+          if (_.findIndex(channels, (o) => o.id === channelId) !== -1) {
+            messages[channelId].push(newMessage);
+            const visibleMessages = messages[selectedChannel];
+            this.setState({ messages, visibleMessages });
+          }
+          // messages[channelId].push(newMessage);
+          // const visibleMessages = messages[selectedChannel];
+          // this.setState({ messages, visibleMessages });
         });
         socket.on('new channel', (data) => {
           const { channels } = this.state;
@@ -248,10 +254,11 @@ export default class App extends React.Component {
   render() {
     const {
       visibleMessages, message, requestState, selectedChannel, showModal,
-      newChannelName, registered, userName, selectedUser, userId, visibleUsers, channels,
+      newChannelName, registered, userName, selectedUser, messages, visibleUsers, channels,
     } = this.state;
+    console.log(messages);
 
-    console.log(visibleMessages);
+    // console.log(visibleMessages);
 
     if (!registered) {
       return (
