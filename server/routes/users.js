@@ -21,9 +21,12 @@ const usersRouter = (io) => {
   router.post('/add', (req, res) => {
     const userId = _.uniqueId();
     const { userName } = req.body;
-    users.push({ id: userId, name: userName, channels: [...commonChannelsIds] });
-    io.emit('new user', { users });
+    const newUser = { id: userId, name: userName, channels: [...commonChannelsIds] };
+    users.push(newUser);
+    // io.emit('new user', { users });
+    // io.emit('new user', newUser);
     res.send(userId);
+    io.emit('new user', newUser);
   });
 
   return router;
