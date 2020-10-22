@@ -4,7 +4,6 @@ import {
 } from 'react-bootstrap';
 
 const Users = (props) => {
-  // const { selectedChannel, channels, selectChannel } = props;
   const { selectUser, users, selectedUser } = props;
 
   return (

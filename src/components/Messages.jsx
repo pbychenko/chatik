@@ -5,7 +5,6 @@ import Message from './Message.jsx';
 
 const Messages = (props) => {
   const { visibleMessages } = props;
-  // console.log(_.uniqueId());
 
   return (
     <ListGroup variant="flush">
