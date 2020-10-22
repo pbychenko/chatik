@@ -43,7 +43,6 @@ export default class App extends React.Component {
       channels: [],
       channelsMessages: [],
       users: [],
-      // visibleUsers: [],
       selectedUser: '',
       visibleMessages: [],
       selectedChannel: '',
@@ -66,7 +65,6 @@ export default class App extends React.Component {
         this.setState({
           requestState: 'success',
           users: initUsers.data.users,
-          // visibleUsers: initUsers.data.users,
           channels: initCannels.data,
           messages: initMessages.data,
         });
@@ -86,11 +84,6 @@ export default class App extends React.Component {
           this.setState({ channels });
         });
         socket.on('new user', (newUser) => {
-          // const { visibleUsers } = this.state;
-          // if (this.state.userId === null || this.state.userId !== newUser.id) {
-          //   visibleUsers.push(newUser);
-          //   this.setState({ visibleUsers });
-          // }
           const { users, userId } = this.state;
           if (userId === null || userId !== newUser.id) {
             users.push(newUser);
@@ -187,7 +180,6 @@ export default class App extends React.Component {
       .then((resp) => {
         // console.log('resp');
         const userId = resp.data.toString();
-        // console.log(userId);
         const newVisibleUsers = users.filter((user) => user.id !== userId);
         this.setState({
           registered: true,
@@ -278,7 +270,6 @@ export default class App extends React.Component {
                       selectedUser={selectedUser}
                       selectUser={this.handleSelectUser}
                   />
-                  {/* {userName}{userId} */}
                 </Col>
                 <Col xs={2} md={1}>
                   <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} />
