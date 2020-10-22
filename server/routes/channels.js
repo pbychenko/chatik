@@ -9,17 +9,11 @@ let { commonChannelsIds } = require('../data');
 const channelsRouter = (io) => {
   // router.get('/', (req, res) => res.send(channels));
 
-  // router.get('/messages', (req, res) => {
-  //   res.send(messages);
-  // });
-
   router.get('/:userId', (req, res) => { // res.send(commonChannels));
     const { userId } = req.params;
 
     if (userId !== 'null') {
       const currentUser = _.find(users, { id: userId });
-      // const currentUserChannels = currentUser.channels;
-      // const filteredChannels = channels.filter((channel) => currentUserChannels.some((id) => id === channel.id));
       const userChannels = getUserChannels(currentUser, channels);
       res.send(userChannels);
     } else {
@@ -33,18 +27,13 @@ const channelsRouter = (io) => {
     if (userId !== 'null') {
       const currentUser = _.find(users, { id: userId });
       const userMessages = _.pick(messages, currentUser.channels);
-      // const currentUserChannels = currentUser.channels;
-      // const filteredChannels = channels.filter((channel) => currentUserChannels.some((id) => id === channel.id));
-      // const userChannels = getUserChannels(currentUser, channels);
-      // console.log(userMessages);
       res.send(userMessages);
     } else {
       res.send(messages);
     }
   });
-  
 
-  //тут надо подумать!!
+  // тут надо подумать!!
   // router.get('/:channelId/messages', (req, res) => { // res.send(commonChannels));
   //   const { userId } = req.params;
 
@@ -94,7 +83,6 @@ const channelsRouter = (io) => {
     const { channelId } = req.params;
     channels = channels.filter((el) => el.id !== channelId);
     commonChannelsIds = commonChannelsIds.filter((el) => el !== channelId);
-    // console.log(commonChannelsIds);
     delete messages[channelId];
     users.forEach((user) => {
       const newUserChannels = user.channels.filter((channel) => channel !== channelId);
@@ -113,7 +101,6 @@ const channelsRouter = (io) => {
     } = req.body;
     const newMessage = { user: userName, text: message, date: messageDate };
     messages[channelId].push(newMessage);
-    // console.log(messages);
 
     io.emit('new message', { channelId, newMessage });
     res.sendStatus(200);
