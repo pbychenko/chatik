@@ -1,4 +1,5 @@
-import React from 'react';
+// import React from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import io from 'socket.io-client';
 import _ from 'lodash';
@@ -35,26 +36,42 @@ const spinnerSizeStyle = {
   height: '13rem',
 };
 
-export default class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      registered: sessionStorage.getItem('registered'),
-      channels: [],
-      channelsMessages: [],
-      users: [],
-      selectedUser: '',
-      visibleMessages: [],
-      selectedChannel: '',
-      message: '',
-      showModal: false,
-      userName: sessionStorage.getItem('userName') || '',
-      userId: sessionStorage.getItem('userId') || null,
-      newChannelName: '',
-      requestState: '',
-      showErrorBlock: false,
-    };
-  }
+// export default class App extends React.Component {
+  export default App = () => { 
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     registered: sessionStorage.getItem('registered'),
+  //     channels: [],
+  //     channelsMessages: [],
+  //     users: [],
+  //     selectedUser: '',
+  //     visibleMessages: [],
+  //     selectedChannel: '',
+  //     message: '',
+  //     showModal: false,
+  //     userName: sessionStorage.getItem('userName') || '',
+  //     userId: sessionStorage.getItem('userId') || null,
+  //     newChannelName: '',
+  //     requestState: '',
+  //     showErrorBlock: false,
+  //   };
+  // }
+  const [registered, setRegistered] = useState(sessionStorage.getItem('registered'));
+  const [channels, setChannels] = useState([]);
+  const [channelsMessages, setChannelsMessages] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState('');
+  const [visibleMessages, setVisibleMessages] = useState([]);
+  const [selectedChannel, setSelectedChannel] = useState('');
+  const [message, setMessage] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [userName, setUserName] = useState(sessionStorage.getItem('userName') || '');
+  const [userId, setUserId] = useState(sessionStorage.getItem('userId') || null);
+  const [newChannelName, setNewChannelName] = useState('');
+  const [requestState, setRequestState] = useState('');
+  const [showErrorBlock, setShowErrorBlock] = useState(false);
+
 
   componentDidMount() {
     this.setState({ requestState: 'processing' }, async () => {
@@ -116,12 +133,18 @@ export default class App extends React.Component {
 
   handleChange = (e) => {
     const { name, value } = e.target;
-    this.setState({ [name]: value });
+    const map = {
+      message: setMessage,
+      newChannelName: setNewChannelName,
+      userName: setUserName
+    };
+    // this.setState({ [name]: value });
+    map[name](value);
   }
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { message, selectedChannel, userName } = this.state;
+    // const { message, selectedChannel, userName } = this.state;
     const messageDate = new Date();
     axios.post(`${baseUrl}/channels/message`, {
       channelId: selectedChannel,
@@ -130,21 +153,27 @@ export default class App extends React.Component {
       messageDate,
     })
       .then(() => {
-        this.setState({ message: '' });
+        // this.setState({ message: '' });
+        setMessage('');
       })
       .catch((error) => {
-        console.log(error);
+        throw error;
       });
   }
 
   handleSelectChannel = (id) => () => {
-    const { messages } = this.state;
+    // const { messages } = this.state;
     const visibleMessages = messages[id];
-    this.setState({ visibleMessages, selectedUser: '', selectedChannel: id });
+    // this.setState({ visibleMessages, selectedUser: '', selectedChannel: id });
+    setVisibleMessages(visibleMessages);
+    setSelectedUser('');
+    setSelectedChannel(id);
   }
 
   handleSelectUser = (id) => () => {
-    this.setState({ selectedChannel: '', selectedUser: id });
+    // this.setState({ selectedChannel: '', selectedUser: id });
+    setSelectedChannel('');
+    setSelectedUser(id);    
   }
 
   handleDeleteChannel = (id) => () => {
@@ -161,12 +190,14 @@ export default class App extends React.Component {
 
   handleAddChannel = (e) => {
     e.preventDefault();
-    const { newChannelName } = this.state;
+    // const { newChannelName } = this.state;
     axios.post(`${baseUrl}/channels/add`, {
       channelName: newChannelName,
     })
       .then(() => {
-        this.setState({ newChannelName: '', showModal: false });
+        // this.setState({ newChannelName: '', showModal: false });
+        setNewChannelName('');
+        setShowModal(false);
       })
       .catch((error) => {
         throw error;
@@ -175,18 +206,22 @@ export default class App extends React.Component {
 
   handleAddUser = (e) => {
     e.preventDefault();
-    const { users, userName } = this.state;
+    // const { users, userName } = this.state;
     axios.post(`${baseUrl}/users/add`, { userName })
       .then((resp) => {
         // console.log('resp');
         const userId = resp.data.toString();
         const newVisibleUsers = users.filter((user) => user.id !== userId);
-        this.setState({
-          registered: true,
-          userId,
-          userName,
-          users: newVisibleUsers,
-        });
+        // this.setState({
+        //   registered: true,
+        //   userId,
+        //   userName,
+        //   users: newVisibleUsers,
+        // });
+        setRegistered(true);
+        setUserId(userId);
+        setUserName(userName);
+        setUsers(newVisibleUsers);
         sessionStorage.setItem('registered', true);
         sessionStorage.setItem('userId', userId);
         sessionStorage.setItem('userName', userName);
@@ -198,7 +233,7 @@ export default class App extends React.Component {
 
   handleCreateChannelWithUser = (id) => (e) => {
     e.preventDefault();
-    const { userId } = this.state;
+    // const { userId } = this.state;
 
     axios.post(`${baseUrl}/channels/addPrivate`, {
       currentUserId: userId,
@@ -213,25 +248,29 @@ export default class App extends React.Component {
   }
 
   handleCloseModal = () => {
-    this.setState({ showModal: false });
+    // this.setState({ showModal: false });
+    setShowModal(false);
   }
 
   handleShowModal = () => {
-    this.setState({ showModal: true });
+    // this.setState({ showModal: true });
+    setShowModal(true);
   }
 
-  render() {
-    const {
-      visibleMessages, message, requestState, selectedChannel, showModal,
-      newChannelName, registered, userName, selectedUser, users, channels,
-    } = this.state;
+  // render() {
+  //   const {
+  //     visibleMessages, message, requestState, selectedChannel, showModal,
+  //     newChannelName, registered, userName, selectedUser, users, channels,
+  //   } = this.state;
 
     if (!registered) {
       return (
-        <RegisterModal onFormChange={this.handleChange}
+        // <RegisterModal onFormChange={this.handleChange}
+        <RegisterModal onFormChange={handleChange}
           onFormSubmit={this.handleAddUser}
           userName={userName}
-          onHide={this.handleCloseModal}
+          // onHide={this.handleCloseModal}
+          onHide={handleCloseModal}
         />
       );
     }
@@ -256,23 +295,31 @@ export default class App extends React.Component {
                   <ListGroup variant="flush">
                     <Channels channels={channels}
                       selectedChannel={selectedChannel}
-                      selectChannel={this.handleSelectChannel}
+                      // selectChannel={this.handleSelectChannel}
+                      selectChannel={handleSelectChannel}
                     />
                     <ListGroup.Item>
-                      <Button variant="outline-info" type="submit" block onClick={this.handleShowModal}>Add channel</Button>
+                      {/* <Button variant="outline-info" type="submit" block onClick={this.handleShowModal}>Add channel</Button> */}
+                      <Button variant="outline-info" type="submit" block onClick={handleShowModal}>Add channel</Button>
                      </ListGroup.Item>
-                    <MyModal show={showModal} onFormChange={this.handleChange}
+                    {/* <MyModal show={showModal} onFormChange={this.handleChange}
                      onFormSubmit={this.handleAddChannel} newChannelName={newChannelName}
                      onHide={this.handleCloseModal}
+                    /> */}
+                    <MyModal show={showModal} onFormChange={handleChange}
+                     onFormSubmit={handleAddChannel} newChannelName={newChannelName}
+                     onHide={handleCloseModal}
                     />
                   </ListGroup>
                   <Users users={users}
                       selectedUser={selectedUser}
-                      selectUser={this.handleSelectUser}
+                      // selectUser={this.handleSelectUser}
+                      selectUser={handleSelectUser}
                   />
                 </Col>
                 <Col xs={2} md={1}>
-                  <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} />
+                  {/* <DeleteChannels channels={channels} deleteChannel={this.handleDeleteChannel} /> */}
+                  <DeleteChannels channels={channels} deleteChannel={handleDeleteChannel} />
                 </Col>
                 <Col xs={12} md={7}>
                   {(selectedChannel !== '')
@@ -280,13 +327,15 @@ export default class App extends React.Component {
                     <>
                       <Messages visibleMessages={visibleMessages} />
                       <MessageForm message={message}
-                      submitMessage={this.handleSubmit} writeMessage={this.handleChange} />
+                      // submitMessage={this.handleSubmit} writeMessage={this.handleChange} />
+                       submitMessage={handleSubmit} writeMessage={handleChange} />
                     </>
                     ) : null
                   }
                   {(selectedUser !== '')
                     ? (
-                      <Button variant="primary" type="submit" block onClick={this.handleCreateChannelWithUser(selectedUser)}>Create Channel with this user</Button>
+                      // <Button variant="primary" type="submit" block onClick={this.handleCreateChannelWithUser(selectedUser)}>Create Channel with this user</Button>
+                      <Button variant="primary" type="submit" block onClick={handleCreateChannelWithUser(selectedUser)}>Create Channel with this user</Button>
                     ) : null
                   }
                 </Col>
