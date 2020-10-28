@@ -36,7 +36,6 @@ const spinnerSizeStyle = {
   height: '13rem',
 };
 
-// export default class App extends React.Component {
 const App = () => {
   // constructor(props) {
   //   super(props);
@@ -70,6 +69,7 @@ const App = () => {
   const [userId, setUserId] = useState(sessionStorage.getItem('userId') || null);
   const [newChannelName, setNewChannelName] = useState('');
   const [requestState, setRequestState] = useState('');
+  // const [socket, setSocket] = useState(null);
   // const [showErrorBlock, setShowErrorBlock] = useState(false);
 
 
@@ -147,130 +147,187 @@ const App = () => {
   //     }
   //   });
   // };
-
-
-  // componentDidMount() {
-  // const initSockets = () => {
-  //   socket.on('new message', (data) => {
-  //     // const { messages, selectedChannel, channels } = this.state;
-  //     const { channelId, newMessage } = data;
-  //     if (_.findIndex(channels, (o) => o.id === channelId) !== -1) {
-  //       messages[channelId].push(newMessage);
-  //       const newVisibleMessages = messages[selectedChannel];
-  //       // this.setState({ messages, visibleMessages });
-  //       setMessages(messages);
-  //       setVisibleMessages(newVisibleMessages);
-  //     }
-  //   });
-  //   socket.on('new channel', (data) => {
-  //     // const { channels } = this.state;
-  //     const { newChannel } = data;
-  //     channels.push(newChannel);
-  //     // this.setState({ channels });
-  //     setChannels(channels);
-  //   });
-  //   socket.on('new user', (newUser) => {
-  //     // const { users, userId } = this.state;
-  //     if (userId === null || userId !== newUser.id) {
-  //       users.push(newUser);
-  //       // this.setState({ users });
-  //       setUsers(users);
-  //     }
-  //   });
-  //   socket.on('new user channel', (data) => {
-  //     // const { users, channels, messages } = this.state;
-  //     const { currentUserId, otherUserId, newChannel } = data;
-  //     // if (this.state.userId === currentUserId || this.state.userId === otherUserId) {
-  //     if (userId === currentUserId || userId === otherUserId) {
-  //       const newUsers = users.filter((user) => (user.id !== currentUserId) && (user.id !== otherUserId));
-  //       channels.push(newChannel);
-  //       messages[newChannel.id] = [];
-  //       // this.setState({ users: newUsers, channels, messages });
-  //       setUsers(newUsers);
-  //       setChannels(channels);
-  //       setMessages(messages);
-  //     }
-  //   });
-  //   socket.on('delete channel', (data) => {
-  //     // const { channels, messages } = this.state;
-  //     const { channelId } = data;
-  //     const newChannels = channels.filter((channel) => channel.id !== channelId);
-  //     delete messages[channelId];
-  //     // this.setState({ channels: newChannels, messages });
-  //     setChannels(newChannels);
-  //     setMessages(messages);
-  //   });
-  // };
+  // useEffect(() => {
+  //   setSocket(io(baseUrl));
+  // }, []);
 
   useEffect(() => {
-    // setRequestState('processing');
     const fetchData = async () => {
       setRequestState('processing');
       try {
         const initCannels = await axios.get(`${baseUrl}/channels/${userId}`);
-        const initUsers = await axios.get(`${baseUrl}/users/${userId}`);
-        const initMessages = await axios.get(`${baseUrl}/channels/${userId}/messages`);
         setRequestState('success');
-        setUsers(initUsers.data.users);
         setChannels(initCannels.data);
-        setMessages(initMessages.data);
-        socket.on('new message', (data) => {
-          // const { messages, selectedChannel, channels } = this.state;
-          const { channelId, newMessage } = data;
-          if (_.findIndex(channels, (o) => o.id === channelId) !== -1) {
-            messages[channelId].push(newMessage);
-            const newVisibleMessages = messages[selectedChannel];
-            // this.setState({ messages, visibleMessages });
-            setMessages(messages);
-            setVisibleMessages(newVisibleMessages);
-          }
-        });
-        socket.on('new channel', (data) => {
-          // const { channels } = this.state;
-          const { newChannel } = data;
-          channels.push(newChannel);
-          // this.setState({ channels });
-          setChannels(channels);
-        });
-        socket.on('new user', (newUser) => {
-          // const { users, userId } = this.state;
-          if (userId === null || userId !== newUser.id) {
-            users.push(newUser);
-            // this.setState({ users });
-            setUsers(users);
-          }
-        });
-        socket.on('new user channel', (data) => {
-          // const { users, channels, messages } = this.state;
-          const { currentUserId, otherUserId, newChannel } = data;
-          // if (this.state.userId === currentUserId || this.state.userId === otherUserId) {
-          if (userId === currentUserId || userId === otherUserId) {
-            const newUsers = users.filter((user) => (user.id !== currentUserId) && (user.id !== otherUserId));
-            channels.push(newChannel);
-            messages[newChannel.id] = [];
-            // this.setState({ users: newUsers, channels, messages });
-            setUsers(newUsers);
-            setChannels(channels);
-            setMessages(messages);
-          }
-        });
-        socket.on('delete channel', (data) => {
-          // const { channels, messages } = this.state;
-          const { channelId } = data;
-          const newChannels = channels.filter((channel) => channel.id !== channelId);
-          delete messages[channelId];
-          // this.setState({ channels: newChannels, messages });
-          setChannels(newChannels);
-          setMessages(messages);
-        });
       } catch (error) {
         setRequestState('failed');
         throw error;
       }
     };
     fetchData();
-    return () => socket.disconnect();
-  }, []);
+  }, [userId, messages]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setRequestState('processing');
+      try {
+        const initUsers = await axios.get(`${baseUrl}/users/${userId}`);
+        setRequestState('success');
+        setUsers(initUsers.data.users);
+      } catch (error) {
+        setRequestState('failed');
+        throw error;
+      }
+    };
+    fetchData();
+  }, [userId]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setRequestState('processing');
+      try {
+        const initMessages = await axios.get(`${baseUrl}/channels/${userId}/messages`);
+        setRequestState('success');
+        setMessages(initMessages.data);
+      } catch (error) {
+        setRequestState('failed');
+        throw error;
+      }
+    };
+    fetchData();
+  }, [userId]);
+  socket.connect();
+  useEffect(() => {
+    // socket.connect();
+    // setSocket(io(baseUrl));
+    // setRequestState('processing');
+    try {
+      socket.on('new message', (data) => {
+        const { channelId, newMessage } = data;
+        // console.log(data);
+        if (_.findIndex(channels, (o) => o.id === channelId) !== -1) {
+          messages[channelId].push(newMessage);
+          const newVisibleMessages = messages[selectedChannel];
+          // this.setState({ messages, visibleMessages });
+          setMessages([...messages]);
+          setVisibleMessages([...newVisibleMessages]);
+        }
+      });
+      socket.on('new channel', (data) => {
+        // const { channels } = this.state;
+        console.log(channels);
+        console.log('here');
+        const { newChannel } = data;
+        channels.push(newChannel);
+        // this.setState({ channels });
+        setChannels([...channels]);
+      });
+      socket.on('new user', (newUser) => {
+        // const { users, userId } = this.state;
+        if (userId === null || userId !== newUser.id) {
+          users.push(newUser);
+          // this.setState({ users });
+          setUsers(users);
+        }
+      });
+      socket.on('new user channel', (data) => {
+        // const { users, channels, messages } = this.state;
+        const { currentUserId, otherUserId, newChannel } = data;
+        // if (this.state.userId === currentUserId || this.state.userId === otherUserId) {
+        if (userId === currentUserId || userId === otherUserId) {
+          const newUsers = users.filter((user) => (user.id !== currentUserId) && (user.id !== otherUserId));
+          channels.push(newChannel);
+          messages[newChannel.id] = [];
+          // this.setState({ users: newUsers, channels, messages });
+          setUsers(newUsers);
+          setChannels(channels);
+          setMessages(messages);
+        }
+      });
+      socket.on('delete channel', (data) => {
+        // const { channels, messages } = this.state;
+        const { channelId } = data;
+        const newChannels = channels.filter((channel) => channel.id !== channelId);
+        delete messages[channelId];
+        // this.setState({ channels: newChannels, messages });
+        setChannels(newChannels);
+        setMessages(messages);
+      });
+    } catch (error) {
+      setRequestState('failed');
+      throw error;
+    }
+    // fetchData();
+  }, [channels]);
+
+  // useEffect(() => {
+  //   // setRequestState('processing');
+  //   const fetchData = async () => {
+  //     setRequestState('processing');
+  //     try {
+  //       // const initCannels = await axios.get(`${baseUrl}/channels/${userId}`);
+  //       const initUsers = await axios.get(`${baseUrl}/users/${userId}`);
+  //       const initMessages = await axios.get(`${baseUrl}/channels/${userId}/messages`);
+  //       setRequestState('success');
+  //       setUsers(initUsers.data.users);
+  //       // setChannels(initCannels.data);
+  //       setMessages(initMessages.data);
+  //       socket.on('new message', (data) => {
+  //         // const { messages, selectedChannel, channels } = this.state;
+  //         const { channelId, newMessage } = data;
+  //         if (_.findIndex(channels, (o) => o.id === channelId) !== -1) {
+  //           messages[channelId].push(newMessage);
+  //           const newVisibleMessages = messages[selectedChannel];
+  //           // this.setState({ messages, visibleMessages });
+  //           setMessages(messages);
+  //           setVisibleMessages(newVisibleMessages);
+  //         }
+  //       });
+  //       socket.on('new channel', (data) => {
+  //         // const { channels } = this.state;
+  //         const { newChannel } = data;
+  //         channels.push(newChannel);
+  //         // this.setState({ channels });
+  //         setChannels(channels);
+  //       });
+  //       socket.on('new user', (newUser) => {
+  //         // const { users, userId } = this.state;
+  //         if (userId === null || userId !== newUser.id) {
+  //           users.push(newUser);
+  //           // this.setState({ users });
+  //           setUsers(users);
+  //         }
+  //       });
+  //       socket.on('new user channel', (data) => {
+  //         // const { users, channels, messages } = this.state;
+  //         const { currentUserId, otherUserId, newChannel } = data;
+  //         // if (this.state.userId === currentUserId || this.state.userId === otherUserId) {
+  //         if (userId === currentUserId || userId === otherUserId) {
+  //           const newUsers = users.filter((user) => (user.id !== currentUserId) && (user.id !== otherUserId));
+  //           channels.push(newChannel);
+  //           messages[newChannel.id] = [];
+  //           // this.setState({ users: newUsers, channels, messages });
+  //           setUsers(newUsers);
+  //           setChannels(channels);
+  //           setMessages(messages);
+  //         }
+  //       });
+  //       socket.on('delete channel', (data) => {
+  //         // const { channels, messages } = this.state;
+  //         const { channelId } = data;
+  //         const newChannels = channels.filter((channel) => channel.id !== channelId);
+  //         delete messages[channelId];
+  //         // this.setState({ channels: newChannels, messages });
+  //         setChannels(newChannels);
+  //         setMessages(messages);
+  //       });
+  //     } catch (error) {
+  //       setRequestState('failed');
+  //       throw error;
+  //     }
+  //   };
+  //   fetchData();
+  //   return () => socket.disconnect();
+  // }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -397,7 +454,7 @@ const App = () => {
     // this.setState({ showModal: true });
     setShowModal(true);
   };
-  console.log(requestState);
+  // console.log(channels);
 
   // render() {
   //   const {
